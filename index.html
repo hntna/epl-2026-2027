@@ -703,7 +703,13 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   .filter-tab{font-size:12px;padding:8px 12px}
 
   table{min-width:0}
-  thead th,tbody td{padding:10px 12px;font-size:13px}
+  thead th,tbody td{padding:8px 4px;font-size:11px;white-space:normal;text-align:center;line-height:1.2}
+  thead th:nth-child(2),tbody td:nth-child(2){text-align:left}
+  .name-avatar{gap:6px}
+  .avatar{width:24px;height:24px;font-size:9px}
+  .pill{width:22px;height:22px;font-size:11px}
+  .amount{font-size:12px !important}
+  .rank{font-size:14px}
 
   .match-team-box{flex-direction: column; align-items: center; justify-content: center; text-align: center;}
   .match-team-box.right-side{flex-direction: column;}
@@ -725,9 +731,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
 }
 @media(max-width:560px){
   .form-row{grid-template-columns:1fr}
-  #tab-rank th:nth-child(3),#tab-rank td:nth-child(3),
-  #tab-rank th:nth-child(4),#tab-rank td:nth-child(4),
-  #tab-rank th:nth-child(5),#tab-rank td:nth-child(5){display:none !important;}
+  /* Removed column hiding so all columns show, using reduced paddings above to fit */
   .banker-bar .banker-select{flex:1 1 100%;min-width:0;font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){
