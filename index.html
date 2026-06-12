@@ -608,6 +608,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
 }
 
 @media(max-width:768px){
+  .member-identity-bar, #adminLoginBtn, #adminBadge { display: none !important; }
   /* Clean Premium Bottom Tab Bar */
   #sidebar{
     top:auto;left:0;right:0;bottom:0;
@@ -791,7 +792,6 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     </div>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-label">Chính</div>
     <button class="nav-item active" id="nav-rank" onclick="switchTab('rank')">
       <span class="nav-icon">🏆</span> Bảng Xếp Hạng <span class="nav-badge" id="rankCountBadge">0</span>
     </button>
@@ -801,12 +801,8 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     <button class="nav-item" id="nav-results" onclick="switchTab('results')">
       <span class="nav-icon">📊</span> Nhập Kết Quả <span class="nav-badge" id="pendingCountBadge">0</span>
     </button>
-    <div class="nav-label">Quản trị</div>
-    <button class="nav-item" id="nav-add" onclick="switchTab('add')">
-      <span class="nav-icon">➕</span> Thêm Trận Đấu <span class="admin-nav-lock" id="lockAdd">🔒</span>
-    </button>
-    <button class="nav-item" id="nav-members" onclick="switchTab('members')">
-      <span class="nav-icon">👥</span> Thành Viên <span class="nav-badge" id="memberCountBadge">0</span><span class="admin-nav-lock" id="lockMembers">🔒</span>
+    <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
+      <span class="nav-icon">👤</span> Cá Nhân
     </button>
   </nav>
   <div class="sidebar-footer" id="sfooter">⚽ World Cup 2026 · Nhóm dự đoán</div>
@@ -869,8 +865,17 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <div id="resultsList"></div>
     </div>
 
+    <!-- TAB: PROFILE -->
+    <div class="tab-pane" id="tab-profile">
+      <div class="section-header">
+        <div class="section-title"><span class="section-icon">👤</span> Trang Cá Nhân</div>
+      </div>
+      <div id="profileContent" style="padding: 16px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-sm);"></div>
+    </div>
+
     <!-- TAB: ADD MATCH -->
     <div class="tab-pane" id="tab-add">
+      <button onclick="switchTab('profile')" style="margin-bottom: 12px; background: transparent; border: none; color: var(--text2); font-weight: 600; cursor: pointer;">⬅ Quay lại Cá Nhân</button>
       <div class="section-header">
         <div class="section-title"><span class="section-icon">➕</span> Thêm Trận Đấu Mới</div>
       </div>
@@ -971,6 +976,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
 
     <!-- TAB: MEMBERS -->
     <div class="tab-pane" id="tab-members">
+      <button onclick="switchTab('profile')" style="margin-bottom: 12px; background: transparent; border: none; color: var(--text2); font-weight: 600; cursor: pointer;">⬅ Quay lại Cá Nhân</button>
       <div class="section-header">
         <div class="section-title"><span class="section-icon">👥</span> Quản Lý Thành Viên</div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1282,6 +1288,75 @@ function checkMemberSession(){
   updateMemberIdentityUI();
 }
 
+function renderProfile() {
+  const content = document.getElementById('profileContent');
+  if(!content) return;
+  
+  let html = '';
+  if (isAdmin) {
+    html += `
+      <div style="margin-bottom:20px; text-align:center;">
+        <div style="font-size:40px; margin-bottom:8px;">🛡️</div>
+        <div style="font-size:18px; font-weight:800;">Tài Khoản Admin</div>
+        <div style="font-size:13px; color:var(--text2); margin-top:4px;">Bạn đang có toàn quyền quản trị hệ thống</div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="btn btn-primary" onclick="switchTab('add')" style="padding:14px; font-size:15px; font-weight:800;">➕ Thêm Trận Đấu Mới</button>
+        <button class="btn" style="background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:14px; font-size:15px; font-weight:800;" onclick="switchTab('members')">👥 Quản Lý Thành Viên</button>
+      </div>
+      <div style="margin-top:24px; border-top:1px solid var(--border); padding-top:16px;">
+        <button class="btn" style="width:100%; background:var(--red-dim); color:var(--red); border:1px solid rgba(244,114,182,.2); padding:12px; font-weight:700;" onclick="adminLogout()">Đăng Xuất Admin</button>
+      </div>
+    `;
+  } else if (currentMember) {
+    const member = MEMBERS.find(m => m.name === currentMember);
+    const net = member ? member.net : 0;
+    const wins = member ? member.correct : 0;
+    const losses = member ? member.wrong : 0;
+    
+    html += `
+      <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:24px;">
+        <div class="avatar ${avColor(currentMember)}" style="width:64px; height:64px; font-size:24px; margin-bottom:12px; border-radius:50%;">${initials(currentMember)}</div>
+        <div style="font-size:20px; font-weight:800;">${currentMember}</div>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+        <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center;">
+          <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">✅ Số trận đúng</div>
+          <div style="font-size:20px; font-weight:800; color:var(--green);">${wins}</div>
+        </div>
+        <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center;">
+          <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">❌ Số trận sai</div>
+          <div style="font-size:20px; font-weight:800; color:var(--red);">${losses}</div>
+        </div>
+        <div style="grid-column:1 / -1; background:linear-gradient(135deg, var(--surface2), var(--surface3)); padding:16px; border-radius:8px; text-align:center; border:1px solid var(--border);">
+          <div style="font-size:13px; color:var(--text2); font-weight:600; margin-bottom:4px;">💰 Lợi Nhuận Gộp (Net)</div>
+          <div style="font-size:26px; font-weight:800; color:${net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : 'var(--text)'}; font-family:var(--font-display);">
+            ${net > 0 ? '+' : net < 0 ? '−' : ''}${fmtMoney(Math.abs(net))}
+          </div>
+        </div>
+      </div>
+      
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <button class="btn" style="background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px; font-weight:700;" onclick="openChangePwdModal()">🔑 Đổi mật khẩu</button>
+        <button class="btn" style="background:var(--red-dim); color:var(--red); border:1px solid rgba(244,114,182,.2); padding:12px; font-weight:700;" onclick="memberLogout()">Đăng xuất</button>
+      </div>
+    `;
+  } else {
+    html += `
+      <div style="text-align:center; padding:20px 0;">
+        <div style="font-size:48px; margin-bottom:16px;">👋</div>
+        <div style="font-size:18px; font-weight:800; margin-bottom:8px;">Bạn chưa đăng nhập</div>
+        <div style="font-size:14px; color:var(--text2); margin-bottom:24px;">Đăng nhập để có thể tham gia dự đoán các trận đấu và xem thống kê cá nhân.</div>
+        
+        <button class="btn btn-primary" onclick="openLoginModal()" style="width:100%; padding:14px; font-size:15px; font-weight:800; margin-bottom:12px;">🔐 Đăng nhập Thành Viên</button>
+        <button class="btn" onclick="openAdminModal()" style="width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px; font-weight:700;">🛡️ Đăng nhập Admin</button>
+      </div>
+    `;
+  }
+  content.innerHTML = html;
+}
+
 function updateMemberIdentityUI(){
   const nameEl     = document.getElementById('memberIdentityName');
   const loginBtn   = document.getElementById('memberLoginBtn');
@@ -1303,6 +1378,7 @@ function updateMemberIdentityUI(){
     loginBtn.onclick = openLoginModal;
     if(changePwdBtn) changePwdBtn.style.display = 'none';
   }
+  renderProfile();
 }
 
 function openLoginModal(){
@@ -2547,6 +2623,7 @@ function switchTab(name){
   if(name==='rank')renderRank();
   if(name==='results')renderResults();
   if(name==='members')renderMembers();
+  if(name==='profile')renderProfile();
   if(name==='add'){ buildAddPredRows(); populateAddBanker(); }
   if(window.innerWidth<=768)closeSidebar();
 }
