@@ -687,11 +687,11 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     justify-content: flex-end !important;
     margin-top: 4px !important;
   }
-  .match-teams-row{gap:8px; flex-direction:row;}
-  .mteam-flag{font-size:24px}
-  .mteam-name{font-size:15px}
+  .match-teams-row{gap:4px; flex-direction:row; align-items:stretch;}
+  .mteam-flag{font-size:32px; margin-bottom:4px;}
+  .mteam-name{font-size:13px; line-height:1.2; font-weight:700;}
   .vs-score{font-size:24px}
-  .vs-center{min-width: 60px; padding: 6px;}
+  .vs-center{min-width: 60px; padding: 6px 10px;}
 
   .pbet{font-size:12px;padding:10px 4px}
   .pred-btns{gap:6px}
@@ -705,8 +705,8 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   table{min-width:0}
   thead th,tbody td{padding:10px 12px;font-size:13px}
 
-  .match-team-box{flex-direction: row;}
-  .match-team-box.right-side{flex-direction: row-reverse;}
+  .match-team-box{flex-direction: column; align-items: center; justify-content: center; text-align: center;}
+  .match-team-box.right-side{flex-direction: column;}
   
   .score-entry-row { flex-direction: row !important; gap: 8px !important; }
   .score-input-big { width: 44px !important; height: 44px !important; font-size: 20px !important; }
@@ -725,7 +725,9 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
 }
 @media(max-width:560px){
   .form-row{grid-template-columns:1fr}
-  #tab-rank th:nth-child(5),#tab-rank td:nth-child(5){display:none}
+  #tab-rank th:nth-child(3),#tab-rank td:nth-child(3),
+  #tab-rank th:nth-child(4),#tab-rank td:nth-child(4),
+  #tab-rank th:nth-child(5),#tab-rank td:nth-child(5){display:none !important;}
   .banker-bar .banker-select{flex:1 1 100%;min-width:0;font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){
