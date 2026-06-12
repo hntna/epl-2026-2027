@@ -802,7 +802,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <span class="nav-icon">📊</span> Nhập Kết Quả <span class="nav-badge" id="pendingCountBadge">0</span>
     </button>
     <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
-      <span class="nav-icon">👤</span> Cá Nhân
+      <span class="nav-icon">🧑</span> Cá Nhân
     </button>
   </nav>
   <div class="sidebar-footer" id="sfooter">⚽ World Cup 2026 · Nhóm dự đoán</div>
@@ -868,7 +868,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     <!-- TAB: PROFILE -->
     <div class="tab-pane" id="tab-profile">
       <div class="section-header">
-        <div class="section-title"><span class="section-icon">👤</span> Trang Cá Nhân</div>
+        <div class="section-title"><span class="section-icon">🧑</span> Trang Cá Nhân</div>
       </div>
       <div id="profileContent" style="padding: 16px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-sm);"></div>
     </div>
@@ -1310,9 +1310,10 @@ function renderProfile() {
     `;
   } else if (currentMember) {
     const member = MEMBERS.find(m => m.name === currentMember);
-    const net = member ? member.net : 0;
-    const wins = member ? member.correct : 0;
-    const losses = member ? member.wrong : 0;
+    const stats = getMemberStats(currentMember);
+    const net = stats ? stats.net : 0;
+    const wins = stats ? stats.correct : 0;
+    const losses = stats ? stats.wrong : 0;
     
     html += `
       <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:24px;">
