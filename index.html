@@ -638,13 +638,15 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   #nav-results .nav-icon{font-size:0;} #nav-results .nav-icon::after{content:'📊';font-size:22px}
   #nav-add .nav-icon{font-size:0;} #nav-add .nav-icon::after{content:'➕';font-size:22px}
   #nav-members .nav-icon{font-size:0;} #nav-members .nav-icon::after{content:'👥';font-size:22px}
+  #nav-profile .nav-icon{font-size:0;} #nav-profile .nav-icon::after{content:'🤵';font-size:22px}
 
-  .nav-item::after{content:'';font-size:10px;font-weight:700;letter-spacing:0;margin-top:2px}
+  .nav-item::after{display:block;font-size:10px;font-weight:700;margin-top:4px}
   #nav-rank::after{content:'BXH'}
   #nav-matches::after{content:'Trận đấu'}
   #nav-results::after{content:'Kết quả'}
   #nav-add::after{content:'Thêm'}
   #nav-members::after{content:'T.viên'}
+  #nav-profile::after{content:'Cá nhân'}
 
   .nav-badge{position:absolute;top:4px;right:50%;margin:0;transform:translateX(10px);min-width:16px;height:16px;padding:0 4px;font-size:9px;background:linear-gradient(135deg, var(--red), #E11D48);color:#fff;border:none;box-shadow:none}
   .nav-item.active .nav-badge{background:linear-gradient(135deg, var(--red), #E11D48);color:#fff}
@@ -802,7 +804,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <span class="nav-icon">📊</span> Nhập Kết Quả <span class="nav-badge" id="pendingCountBadge">0</span>
     </button>
     <button class="nav-item" id="nav-profile" onclick="switchTab('profile')">
-      <span class="nav-icon">🧑</span> Cá Nhân
+      <span class="nav-icon">🤵</span> Cá Nhân
     </button>
   </nav>
   <div class="sidebar-footer" id="sfooter">⚽ World Cup 2026 · Nhóm dự đoán</div>
@@ -868,7 +870,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     <!-- TAB: PROFILE -->
     <div class="tab-pane" id="tab-profile">
       <div class="section-header">
-        <div class="section-title"><span class="section-icon">🧑</span> Trang Cá Nhân</div>
+        <div class="section-title"><span class="section-icon">🤵</span> Trang Cá Nhân</div>
       </div>
       <div id="profileContent" style="padding: 16px; background: var(--surface); border-radius: 12px; box-shadow: var(--shadow-sm);"></div>
     </div>
