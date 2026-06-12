@@ -719,9 +719,14 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   .score-team-name { font-size: 13px !important; }
   .score-vs-divider { transform: none !important; font-size: 16px !important; margin: 0 4px !important; }
   
-  .pred-member-row { grid-template-columns: 80px minmax(0,1fr) auto !important; gap: 6px !important; padding: 8px !important; }
+  .pred-member-row { display: flex !important; flex-wrap: wrap !important; gap: 8px 6px !important; padding: 10px 8px !important; align-items: center; }
+  .pred-member-name { flex: 0 0 auto !important; max-width: 100px; font-size: 12px !important; gap: 4px !important; }
+  .pred-confirm { margin-left: auto !important; font-size: 11px; }
+  .pred-member-row > .pred-btns { flex: 0 0 100% !important; width: 100%; order: 3; margin-top: 4px; }
+  .pred-member-row > div:nth-child(2):not(.pred-btns) { flex: 1 1 0% !important; min-width: 100px; margin: 0 4px; }
+  
   .member-result-row { grid-template-columns: 80px minmax(0,1fr) auto auto !important; gap: 6px !important; padding: 8px !important; }
-  .pred-member-name, .mrr-name { font-size: 12px !important; gap: 4px !important; }
+  .mrr-name { font-size: 12px !important; gap: 4px !important; }
   
   #tab-members th:nth-child(3), #tab-members td:nth-child(3),
   #tab-members th:nth-child(4), #tab-members td:nth-child(4),
@@ -2057,7 +2062,7 @@ function renderMatches(){
       } else if(isMe){
         confirmCtrl = confirmed ? '<span class="pc-badge pc-done">🔒 Đã chốt</span>'
                     : pick ? `<button class="pc-btn pc-confirm" onclick="confirmMatchPred('${m.id}','${safeN}')">✓ Xác nhận</button>`
-                    : '<span class="pc-hint">Chọn 1 ô rồi bấm Xác nhận</span>';
+                    : '<span class="pc-hint">Chưa chọn kèo</span>';
       } else {
         confirmCtrl = confirmed ? '<span class="pc-badge pc-done">🔒 Đã chốt</span>'
                     : pick ? '<span class="pc-badge pc-pending">✎ Chưa chốt</span>' : '';
