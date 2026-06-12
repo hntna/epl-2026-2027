@@ -840,7 +840,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
           <thead><tr>
             <th>#</th><th>👤 Thành Viên</th>
             <th>✅ Đúng</th><th>❌ Sai</th>
-            <th>🏦 Làm Cái</th><th>💰 Số Dư</th>
+            <th>💰 Số Dư</th>
           </tr></thead>
           <tbody id="rankBody"></tbody>
         </table>
@@ -1755,13 +1755,12 @@ function renderRank(){
 
   const medals=['🥇','🥈','🥉'];
   document.getElementById('rankBody').innerHTML = rows.length===0
-    ? '<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--muted)">Chưa có dữ liệu</td></tr>'
+    ? '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--muted)">Chưa có dữ liệu</td></tr>'
     : rows.map((r,i)=>`<tr>
       <td><span class="rank">${medals[i]||i+1}</span></td>
-      <td class="name-cell"><div class="name-avatar"><div class="avatar ${avColor(r.name)}">${initials(r.name)}</div>${r.name}</div></td>
+      <td class="name-cell"><div class="name-avatar"><div class="avatar ${avColor(r.name)}">${initials(r.name)}</div><span style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px;line-height:1.2">${r.name}${r.bankerCount ? `<span style="font-size:10px;background:rgba(245,158,11,0.15);color:var(--gold);padding:2px 6px;border-radius:99px;white-space:nowrap;font-weight:800">🏦 ${r.bankerCount}</span>` : ''}</span></div></td>
       <td><span class="pill pill-win">${r.correct}</span></td>
       <td><span class="pill pill-loss">${r.wrong}</span></td>
-      <td><span style="color:var(--muted);font-size:12px">${r.bankerCount||0}</span></td>
       <td>
         <span class="amount" style="font-family:var(--font-display);font-size:14px;font-weight:800">${fmtNet(r.net)}</span>
       </td>
