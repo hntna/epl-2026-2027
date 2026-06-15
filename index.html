@@ -387,10 +387,11 @@ tbody tr:hover{background:var(--surface2)}
 .tag-locked{background:linear-gradient(135deg,#F43F5E,#FB7185);color:#fff;box-shadow:0 2px 6px rgba(244,63,94,0.25)}
 
 /* MATCH CARDS */
+.match-accordion{display:flex;flex-direction:column;gap:10px}
 .match-item{
   background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:24px;margin-bottom:24px;
-  box-shadow:var(--shadow);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);
   transition:all .3s ease;
   min-width:0;
   position: relative;
@@ -400,77 +401,114 @@ tbody tr:hover{background:var(--surface2)}
   content: ''; position: absolute; top: 0; left: 0; width: 4px; bottom: 0;
   background: transparent; transition: background 0.3s;
 }
-.match-item:hover{box-shadow:var(--shadow-lg); border-color:var(--primary-dim);}
-.match-item:hover::after{background: var(--primary);}
+.match-item.is-open{box-shadow:var(--shadow-lg); border-color:var(--primary-dim);}
+.match-item.is-open::after{background: var(--primary);}
 .match-item.is-locked{opacity:0.9;background:var(--surface2)}
 
-.match-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px}
-.match-no{font-family:var(--font-display);font-size:12px;font-weight:800;color:#fff;background:linear-gradient(135deg,#4F46E5,#8B5CF6);padding:4px 10px;border-radius:99px;flex-shrink:0;box-shadow:0 2px 8px rgba(79,70,229,0.3)}
-.match-meta{display:flex;align-items:center;gap:10px;flex-wrap:wrap;flex:1;min-width:0}
-.match-actions-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-left:auto}
+.match-header{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px;cursor:pointer;
+  transition:background .2s;
+  user-select:none;-webkit-user-select:none;
+}
+.match-header:hover{background:var(--surface2)}
+.match-header:active{background:var(--surface3)}
 
-/* Teams & Score */
+.mh-no{font-family:var(--font-display);font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,#4F46E5,#8B5CF6);padding:3px 8px;border-radius:99px;flex-shrink:0}
+.mh-teams{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.mh-teams-line{font-size:14px;font-weight:800;color:var(--text);display:flex;align-items:center;gap:5px;flex-wrap:wrap;line-height:1.3}
+.mh-teams-line .mh-vs{font-size:11px;font-weight:700;color:var(--muted);margin:0 1px}
+.mh-info{display:flex;align-items:center;gap:5px;flex-wrap:wrap;font-size:11px;font-weight:600;color:var(--text2)}
+.mh-tag{padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;white-space:nowrap}
+.mh-tag-date{background:var(--surface3);color:var(--text2)}
+.mh-tag-handicap{background:var(--primary-dim);color:var(--primary-text)}
+.mh-tag-bet{background:var(--orange-dim);color:var(--orange)}
+.mh-tag-locked{background:var(--red-dim);color:var(--red)}
+.mh-tag-open{background:var(--green-dim);color:var(--green)}
+
+.mh-right{flex-shrink:0;display:flex;align-items:center;gap:6px}
+.mh-arrow{font-size:16px;color:var(--muted);transition:transform .3s ease;flex-shrink:0}
+.match-item.is-open .mh-arrow{transform:rotate(180deg);color:var(--primary-text)}
+
+.mh-pred-summary{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:700}
+.mh-pred-chip{padding:2px 5px;border-radius:4px;white-space:nowrap}
+.mh-pred-chip.win{background:var(--green-dim);color:var(--green)}
+.mh-pred-chip.loss{background:var(--red-dim);color:var(--red)}
+.mh-pred-chip.none{background:var(--surface3);color:var(--muted)}
+
+.match-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .4s cubic-bezier(0.4,0,0.2,1), padding .3s ease;
+  padding:0 16px;
+  border-top:0px solid transparent;
+}
+.match-item.is-open .match-body{
+  max-height:2000px;
+  padding:0 16px 16px;
+  border-top:1px solid var(--border);
+}
+
 .match-teams-row{
   display:flex;align-items:center;justify-content:space-between;
-  gap:16px;margin-bottom:20px;
+  gap:12px;margin:16px 0;
 }
-.match-team-box{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
+.match-team-box{display:flex;align-items:center;gap:10px;flex:1;min-width:0}
 .match-team-box.right-side{flex-direction:row-reverse;text-align:right}
 .mteam-flag{font-size:28px;line-height:1; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));}
-.mteam-name{font-size:18px;font-weight:800;color:var(--text);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:normal;line-height:1.2;word-break:break-word}
+.mteam-name{font-size:16px;font-weight:800;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:normal;line-height:1.2;word-break:break-word}
 
 .vs-center{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:linear-gradient(135deg, #1E293B, #334155);border-radius:12px;
-  padding:10px 16px;min-width:80px;flex-shrink:0;
+  background:linear-gradient(135deg, #1E293B, #334155);border-radius:10px;
+  padding:8px 14px;min-width:70px;flex-shrink:0;
   box-shadow: 0 4px 12px rgba(15,23,42,0.15);
 }
 body.dark-mode .vs-center { background:linear-gradient(135deg, #334155, #475569); }
 .vs-txt{font-size:11px;font-weight:800;color:rgba(255,255,255,0.7);text-transform:uppercase}
-.vs-score{font-family:var(--font-display);font-size:32px;font-weight:900;line-height:1;color:#fff;letter-spacing:-1px}
-.vs-handicap{font-size:12px;font-weight:700;color:rgba(255,255,255,0.6);margin-top:4px;white-space:nowrap}
+.vs-score{font-family:var(--font-display);font-size:28px;font-weight:900;line-height:1;color:#fff;letter-spacing:-1px}
+.vs-handicap{font-size:11px;font-weight:700;color:rgba(255,255,255,0.6);margin-top:3px;white-space:nowrap}
 
-/* Prediction Panel */
-.pred-panel{background:var(--bg);border-radius:var(--radius-sm);padding:20px;margin-top:16px;border:1px solid var(--border)}
-.pred-panel-header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.match-admin-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:12px;padding:8px 12px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
+
+.pred-panel{background:var(--bg);border-radius:var(--radius-sm);padding:16px;border:1px solid var(--border)}
+.pred-panel-header{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:12px}
 .pred-panel-title{font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px}
 .pred-count-item{font-weight:700}
 .pred-locked-bar{background:var(--red-dim);color:var(--red);padding:4px 12px;border-radius:6px;font-weight:700;font-size:12px}
 
-.pred-rows{display:flex;flex-direction:column;gap:10px}
-.pred-member-row{display:grid;grid-template-columns:140px minmax(0,1fr) auto;align-items:center;gap:16px;background:var(--surface);border-radius:8px;padding:10px 14px;border:1px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,0.02)}
+.pred-rows{display:flex;flex-direction:column;gap:8px}
+.pred-member-row{display:grid;grid-template-columns:120px minmax(0,1fr) auto;align-items:center;gap:12px;background:var(--surface);border-radius:8px;padding:8px 12px;border:1px solid var(--border);box-shadow:0 1px 2px rgba(0,0,0,0.02)}
 .pred-member-row.is-mine{border:2px solid var(--primary);box-shadow:0 0 0 2px var(--primary-dim)}
 .pred-member-row.is-confirmed{opacity:1}
 .pred-member-row.is-other{opacity:0.6}
 .pred-member-row.is-locked-row{opacity:0.8;background:var(--surface2)}
 
-.pred-member-name{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:700;color:var(--text);min-width:0;overflow:hidden}
+.pred-member-name{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--text);min-width:0;overflow:hidden}
 .me-tag{background:var(--primary);color:#fff;font-size:10px;font-weight:800;padding:2px 6px;border-radius:4px;flex-shrink:0}
 
-/* Prediction Buttons (Ticket Style) */
-.pred-btns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,0.8fr) minmax(0,1fr);gap:8px;min-width:0}
+.pred-btns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,0.8fr) minmax(0,1fr);gap:6px;min-width:0}
 .pred-btns.pred-btns-2{grid-template-columns:1fr 1fr}
 .pbet{
   border:2px solid var(--border);background:var(--surface);color:var(--text2);
-  font-size:13px;font-weight:700;padding:10px 6px;border-radius:10px;
+  font-size:12px;font-weight:700;padding:8px 4px;border-radius:8px;
   cursor:pointer;transition:all .25s ease;
   white-space:normal; word-break:break-word; line-height:1.2; min-width:0;
   text-align:center; display:flex; align-items:center; justify-content:center;
 }
 .pbet:hover{background:var(--surface2);color:var(--text);border-color:var(--border-accent);transform:translateY(-2px)}
 .pbet:active{transform:scale(.97)}
-.pbet.sel-win{background:linear-gradient(135deg,#10B981,#34D399);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(16,185,129,0.45);transform:translateY(-2px)}
-.pbet.sel-draw{background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(245,158,11,0.45);transform:translateY(-2px)}
-.pbet.sel-loss{background:linear-gradient(135deg,#F43F5E,#FB7185);color:#fff;border-color:transparent;box-shadow:0 6px 16px rgba(244,63,94,0.45);transform:translateY(-2px)}
+.pbet.sel-win{background:linear-gradient(135deg,#10B981,#34D399);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(16,185,129,0.4);transform:translateY(-1px)}
+.pbet.sel-draw{background:linear-gradient(135deg,#F59E0B,#FBBF24);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(245,158,11,0.4);transform:translateY(-1px)}
+.pbet.sel-loss{background:linear-gradient(135deg,#F43F5E,#FB7185);color:#fff;border-color:transparent;box-shadow:0 4px 12px rgba(244,63,94,0.4);transform:translateY(-1px)}
 
 .is-other .pbet,.is-locked-row .pbet,.is-confirmed .pbet{pointer-events:none}
 
-.pred-confirm{display:flex;align-items:center;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.pc-btn{border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:transform .2s;white-space:nowrap}
+.pred-confirm{display:flex;align-items:center;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+.pc-btn{border:none;border-radius:6px;padding:6px 12px;font-size:11px;font-weight:700;cursor:pointer;transition:transform .2s;white-space:nowrap}
 .pc-btn:active{transform:scale(.95)}
 .pc-confirm{background:linear-gradient(135deg, var(--primary), #8B5CF6);color:#fff;box-shadow:var(--shadow-colored)}
 .pc-unlock{background:var(--surface);color:var(--text);border:1px solid var(--border)}
-.pc-badge{font-size:12px;font-weight:700;padding:6px 12px;border-radius:6px;white-space:nowrap}
+.pc-badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;white-space:nowrap}
 .pc-done{background:var(--surface3);color:var(--text)}
 .pc-pending{background:var(--surface);color:var(--text);border:1px solid var(--border)}
 .pc-picked{background:var(--primary-dim);color:var(--primary-text)}
@@ -487,6 +525,7 @@ body.dark-mode .vs-center { background:linear-gradient(135deg, #334155, #475569)
 .btn-lock{background:var(--red-dim);color:var(--red)}
 .btn-unlock{background:var(--green-dim);color:var(--green)}
 .btn-lock:active,.btn-unlock:active{transform:scale(.95)}
+
 
 /* RESULTS TAB */
 .filter-tabs{display:flex;gap:8px;margin-bottom:24px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
@@ -681,7 +720,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   .s-label{font-size:11px}
   .s-value{font-size:24px}
 
-  .match-item{padding:16px;margin-bottom:16px;border-radius:16px}
+  /* match-item styles now handled by accordion CSS */
   .match-top{flex-direction:row;align-items:flex-start;gap:8px; flex-wrap: wrap;}
   .match-actions-row { 
     margin-left: auto !important; 
@@ -2151,27 +2190,37 @@ function renderMatches(){
     return;
   }
   const sorted = [...pending].reverse();
-  document.getElementById('matchList').innerHTML = sorted.map(m=>{
+  let html = '<div class="match-accordion">';
+  html += sorted.map(m=>{
     const done = !!m.result;
-    const locked = isEffectiveLocked(m);   // thủ công HOẶC tự động
-    const manualLocked = !!m.locked;       // chỉ khóa thủ công
-    const autoLocked = isAutoLocked(m);    // chỉ auto-lock
-    const countdown = lockCountdown(m);    // ms còn lại trước auto-lock
+    const locked = isEffectiveLocked(m);
+    const manualLocked = !!m.locked;
+    const autoLocked = isAutoLocked(m);
+    const countdown = lockCountdown(m);
     // Count predictions
-    let cntWin=0,cntDraw=0,cntLoss=0,cntNone=0;
-    MEMBERS.forEach(m2=>{if(m2.name===(m.banker||''))return;const p=m.predictions[m2.name];if(!p||!p.pick)cntNone++;else if(p.pick==='win')cntWin++;else if(p.pick==='draw')cntDraw++;else cntLoss++;});
+    let cntWin=0,cntLoss=0,cntNone=0;
+    MEMBERS.forEach(m2=>{if(m2.name===(m.banker||''))return;const p=m.predictions[m2.name];if(!p||!p.pick)cntNone++;else if(p.pick==='win')cntWin++;else cntLoss++;});
     const hcLabel = parseFloat(m.handicapVal)===0 ? 'Chấp bằng' : (m.handicapFavor==='away'?m.away:m.home)+' nhận '+m.handicapVal;
-    const scoreDisplay = done ? `${m.result.home} – ${m.result.away}` : 'vs';
-      let shortDate = m.date || '';
-      if(shortDate.includes('-')) {
-          let p = shortDate.split('-');
-          if(p.length===3) shortDate = p[2]+'/'+p[1];
-      }
+    let shortDate = m.date || '';
+    if(shortDate.includes('-')) {
+      let p = shortDate.split('-');
+      if(p.length===3) shortDate = p[2]+'/'+p[1];
+    }
 
+    // Status tag
+    const statusTag = locked
+      ? `<span class="mh-tag mh-tag-locked">${autoLocked?'⏱️ Khóa':'🔒 Khóa'}</span>`
+      : `<span class="mh-tag mh-tag-open">⏳ Chờ</span>`;
+
+    // Prediction summary chips
+    const predSummary = `<div class="mh-pred-summary">
+      ${cntWin?`<span class="mh-pred-chip win">🏠${cntWin}</span>`:''}
+      ${cntLoss?`<span class="mh-pred-chip loss">✈️${cntLoss}</span>`:''}
+      ${cntNone?`<span class="mh-pred-chip none">⏸${cntNone}</span>`:''}
+    </div>`;
 
     // Prediction rows per member
     const predRows = memberNames().map(name=>{
-      // Nhà cái không đoán → hàng riêng
       if(name === (m.banker||'')){
         return `<div class="pred-member-row is-banker">
           <div class="pred-member-name"><div class="avatar ${avColor(name)}" style="width:26px;height:26px;font-size:10px">${initials(name)}</div>${name} <span class="banker-tag">🏦 CÁI</span></div>
@@ -2183,27 +2232,18 @@ function renderMatches(){
       const pick = pred?.pick;
       const confirmed = !!pred?.confirmed;
       const wSel = pick==='win'?' sel-win':'';
-      const dSel = pick==='draw'?' sel-draw':'';
       const lSel = pick==='loss'?' sel-loss':'';
       const isMe = (!isAdmin && name === currentMember);
       const readOnlyMatch = locked || done;
 
-      // CSS row class: is-mine (sửa được), is-confirmed (đã chốt → khóa), is-other (chỉ xem), is-locked-row (trận khóa)
       let rowClass = '';
-      if(readOnlyMatch){
-        rowClass = 'is-locked-row';
-      } else if(isAdmin){
-        rowClass = '';                                       // admin: luôn sửa được
-      } else if(isMe){
-        rowClass = confirmed ? 'is-mine is-confirmed' : 'is-mine';
-      } else {
-        rowClass = 'is-other';
-      }
+      if(readOnlyMatch) rowClass = 'is-locked-row';
+      else if(isAdmin) rowClass = '';
+      else if(isMe) rowClass = confirmed ? 'is-mine is-confirmed' : 'is-mine';
+      else rowClass = 'is-other';
 
-      // Me tag
       const meTag = isMe ? '<span class="me-tag">Bạn</span>' : '';
 
-      // Nút/nhãn xác nhận (chốt)
       let confirmCtrl = '';
       if(readOnlyMatch){
         confirmCtrl = confirmed ? '<span class="pc-badge pc-done">🔒 Đã chốt</span>'
@@ -2226,12 +2266,12 @@ function renderMatches(){
       return `<div class="pred-member-row ${rowClass}">
         <div class="pred-member-name"><div class="avatar ${avColor(name)}" style="width:26px;height:26px;font-size:10px">${initials(name)}</div>${name}${meTag}</div>
         ${((!isMe && !isAdmin) || confirmed || readOnlyMatch) 
-            ? `<div style="text-align:center; font-weight:700; padding:8px 12px; margin:0 4px; border-radius:8px; display:flex; align-items:center; justify-content:center; white-space:nowrap" class="pbet ${pick==='win'?'sel-win':pick==='draw'?'sel-draw':pick==='loss'?'sel-loss':''}">
-                 ${pick==='win'?'🏠 Đội 1 thắng':pick==='draw'?'— Hòa':pick==='loss'?'✈️ Đội 2 thắng':'Chưa chọn'}
+            ? `<div style="text-align:center; font-weight:700; padding:6px 10px; border-radius:8px; display:flex; align-items:center; justify-content:center; white-space:nowrap" class="pbet ${pick==='win'?'sel-win':pick==='draw'?'sel-draw':pick==='loss'?'sel-loss':''}">
+                 ${pick==='win'?'🏠 Đội 1':pick==='draw'?'— Hòa':pick==='loss'?'✈️ Đội 2':'Chưa chọn'}
                </div>`
             : `<div class="pred-btns pred-btns-2">
-          <button class="pbet${wSel}" onclick="setMatchPred('${m.id}','${safeN}','win')">🏠 Đội 1 thắng</button>
-          <button class="pbet${lSel}" onclick="setMatchPred('${m.id}','${safeN}','loss')">✈️ Đội 2 thắng</button>
+          <button class="pbet${wSel}" onclick="setMatchPred('${m.id}','${safeN}','win')">🏠 Đội 1</button>
+          <button class="pbet${lSel}" onclick="setMatchPred('${m.id}','${safeN}','loss')">✈️ Đội 2</button>
         </div>`}
         <div class="pred-confirm">${confirmCtrl}</div>
       </div>`;
@@ -2241,70 +2281,91 @@ function renderMatches(){
     let lockBtn = '';
     if(isAdmin){
       if(autoLocked){
-        lockBtn = `<span style="font-size:11px;color:var(--red);font-weight:700;padding:5px 10px;background:var(--red-dim);border-radius:7px;border:1px solid rgba(244,114,182,.25)">⏱️ Tự động khóa</span>`;
+        lockBtn = `<span style="font-size:11px;color:var(--red);font-weight:700;padding:4px 8px;background:var(--red-dim);border-radius:6px">⏱️ Tự động khóa</span>`;
       } else if(manualLocked){
         lockBtn = `<button class="btn-unlock" onclick="toggleMatchLock('${m.id}')">🔓 Mở khóa</button>`;
       } else {
-        // Hiện countdown nếu trận sắp bắt đầu trong 10 phút
         const cdLabel = countdown !== null && countdown <= 600000
           ? ` <span style="font-size:10px;opacity:.7">(${Math.ceil(countdown/1000)}s)</span>` : '';
-        lockBtn = `<button class="btn-lock" onclick="toggleMatchLock('${m.id}')">🔒 Khóa BĐ${cdLabel}</button>`;
+        lockBtn = `<button class="btn-lock" onclick="toggleMatchLock('${m.id}')">🔒 Khóa${cdLabel}</button>`;
       }
     }
 
-    return`<div class="match-item${locked?' is-locked':''}">
-      <div class="match-top">
-        <div class="match-no">#${matches.indexOf(m)+1}</div>
-        <div class="match-meta" style="display:block; min-width:0; flex:1">
-            <div style="font-size:11px; color:var(--text2); font-weight:600; white-space:normal; word-break:break-word; text-transform:uppercase; letter-spacing:0.5px">
-              ${m.stage} &bull; ${shortDate}${m.time?' '+m.time:''} &bull; ${done?'<span style="color:var(--green)">CÓ KQ</span>' : locked?'<span style="color:var(--red)">ĐÃ KHÓA</span>' : '<span style="color:var(--orange)">CHỜ KQ</span>'}
-            </div>
-            <div style="font-size:14px; font-weight:700; color:var(--text); white-space:normal; word-break:break-word; margin-top:4px">
-               ${hcLabel} <span style="color:var(--border-accent);margin:0 6px">|</span> <span style="color:var(--gold)">${fmtMoney(m.bet)}</span>
-            </div>
+    // Admin actions bar
+    const adminBar = isAdmin ? `<div class="match-admin-bar">
+      ${lockBtn}
+      <button class="btn-sm btn-orange" onclick="openEditMatchModal('${m.id}')">📊 Nhập KQ</button>
+      <button class="btn-sm btn-edit" onclick="openEditMatchInfoModal('${m.id}')">✏️ Sửa</button>
+      <button class="btn-sm btn-del" onclick="openDeleteModal('${m.id}')">🗑️</button>
+    </div>` : '';
+
+    return`<div class="match-item${locked?' is-locked':''}" id="match_${m.id}">
+      <div class="match-header" onclick="toggleMatch('${m.id}')">
+        <span class="mh-no">#${matches.indexOf(m)+1}</span>
+        <div class="mh-teams">
+          <div class="mh-teams-line">
+            ${getFlag(m.home)} ${m.home} <span class="mh-vs">vs</span> ${getFlag(m.away)} ${m.away}
           </div>
-        ${isAdmin ? `<div class="match-actions-row">
-          ${lockBtn}
-          ${!done?`<button class="btn-sm btn-orange" onclick="openEditMatchModal('${m.id}')">${isAdmin?'📊 Nhập KQ':'🔒 Nhập KQ'}</button>`:''}
-          <button class="btn-sm btn-edit" onclick="openEditMatchInfoModal('${m.id}')">${isAdmin?'✏️':'🔒'}</button>
-          <button class="btn-sm btn-del" onclick="openDeleteModal('${m.id}')">${isAdmin?'🗑️':'🔒'}</button>
-        </div>` : ''}
-      </div>
-      <div class="match-teams-row">
-        <div class="match-team-box">
-          <div class="mteam-flag">${getFlag(m.home)}</div>
-          <div class="mteam-name">${m.home}</div>
-          <div class="mteam-sub">Đội 1</div>
-        </div>
-        <div class="vs-center">
-          <div class="vs-score">${scoreDisplay}</div>
-          <div class="vs-handicap">${m.handicapVal} chấp</div>
-        </div>
-        <div class="match-team-box right-side">
-          <div class="mteam-flag">${getFlag(m.away)}</div>
-          <div class="mteam-name">${m.away}</div>
-          <div class="mteam-sub">Đội 2</div>
-        </div>
-      </div>
-      <div class="pred-panel" style="margin-top:12px">
-        <div class="pred-panel-header">
-          <div class="pred-panel-title">👥 Dự đoán</div>
-          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            ${locked||done ? `<div class="pred-locked-bar" style="margin:0;padding:3px 10px;font-size:11px">${done?'✅ Đã có KQ':autoLocked?'⏱️ Tự động khóa khi trận bắt đầu':'🔒 Đã khóa bình chọn'}</div>` : ''}
-            ${!isAdmin && !currentMember && !locked && !done ? `<button onclick="openLoginModal()" style="background:var(--primary-dim);color:var(--primary);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer">🔐 Đăng nhập để dự đoán</button>` : ''}
-            <span class="pred-count-item" style="font-size:11px"><span style="color:var(--green)">🏠${cntWin}</span> <span style="color:var(--red)">✈️${cntLoss}</span>${cntNone>0?` <span style="color:var(--muted)">⏸${cntNone}</span>`:''}</span>
+          <div class="mh-info">
+            <span class="mh-tag mh-tag-date">${shortDate}${m.time?' '+m.time:''}</span>
+            <span class="mh-tag mh-tag-handicap">${hcLabel}</span>
+            <span class="mh-tag mh-tag-bet">${fmtMoney(m.bet)}</span>
+            ${statusTag}
           </div>
         </div>
-        <div class="banker-bar" style="margin:0 12px 10px">
-          <span class="bb-label">🏦 Nhà cái</span>
-          ${bankerControl(m)}
-          ${!(m.banker)?'<span class="banker-warn">— Chưa chọn</span>':''}
+        <div class="mh-right">
+          ${predSummary}
+          <span class="mh-arrow">▼</span>
         </div>
-        <div class="pred-rows">${predRows}</div>
+      </div>
+      <div class="match-body">
+        ${adminBar}
+        <div class="match-teams-row">
+          <div class="match-team-box">
+            <div class="mteam-flag">${getFlag(m.home)}</div>
+            <div class="mteam-name">${m.home}</div>
+          </div>
+          <div class="vs-center">
+            <div class="vs-score">vs</div>
+            <div class="vs-handicap">${m.handicapVal} chấp</div>
+          </div>
+          <div class="match-team-box right-side">
+            <div class="mteam-flag">${getFlag(m.away)}</div>
+            <div class="mteam-name">${m.away}</div>
+          </div>
+        </div>
+        <div class="pred-panel">
+          <div class="pred-panel-header">
+            <div class="pred-panel-title">👥 Dự đoán</div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              ${locked ? `<div class="pred-locked-bar" style="margin:0;padding:3px 10px;font-size:11px">${autoLocked?'⏱️ Tự động khóa khi trận bắt đầu':'🔒 Đã khóa bình chọn'}</div>` : ''}
+              ${!isAdmin && !currentMember && !locked ? `<button onclick="openLoginModal()" style="background:var(--primary-dim);color:var(--primary);border:1px solid rgba(245,158,11,.3);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer">🔐 Đăng nhập để dự đoán</button>` : ''}
+            </div>
+          </div>
+          <div class="banker-bar" style="margin:0 0 10px">
+            <span class="bb-label">🏦 Nhà cái</span>
+            ${bankerControl(m)}
+            ${!(m.banker)?'<span class="banker-warn">— Chưa chọn</span>':''}
+          </div>
+          <div class="pred-rows">${predRows}</div>
+        </div>
       </div>
     </div>`;
   }).join('');
+  html += '</div>';
+  document.getElementById('matchList').innerHTML = html;
   document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
+}
+
+// Toggle accordion
+function toggleMatch(id){
+  const el = document.getElementById('match_'+id);
+  if(!el) return;
+  const wasOpen = el.classList.contains('is-open');
+  // Close all others
+  document.querySelectorAll('.match-item.is-open').forEach(e=>e.classList.remove('is-open'));
+  // Toggle this one
+  if(!wasOpen) el.classList.add('is-open');
 }
 
 // ── ADD MATCH FORM ──
