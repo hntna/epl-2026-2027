@@ -2179,6 +2179,10 @@ function clearResult(mid){
 }
 
 function renderMatches(){
+  // Remember currently open accordion
+  const openEl = document.querySelector('.match-item.is-open');
+  const openId = openEl ? openEl.id : null;
+
   const pending = matches.filter(m=>!m.result);
   if(matches.length===0){
     document.getElementById('matchList').innerHTML='<div class="empty-state"><div class="ei">⚽</div>Chưa có trận đấu nào. Hãy thêm trận đầu tiên!</div>';
@@ -2277,7 +2281,6 @@ function renderMatches(){
       </div>`;
     }).join('');
 
-    // Lock/unlock button for admin
     let lockBtn = '';
     if(isAdmin){
       if(autoLocked){
@@ -2291,7 +2294,6 @@ function renderMatches(){
       }
     }
 
-    // Admin actions bar
     const adminBar = isAdmin ? `<div class="match-admin-bar">
       ${lockBtn}
       <button class="btn-sm btn-orange" onclick="openEditMatchModal('${m.id}')">📊 Nhập KQ</button>
@@ -2354,6 +2356,13 @@ function renderMatches(){
   }).join('');
   html += '</div>';
   document.getElementById('matchList').innerHTML = html;
+  
+  // Restore currently open accordion
+  if(openId){
+    const el = document.getElementById(openId);
+    if(el) el.classList.add('is-open');
+  }
+
   document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
 }
 
