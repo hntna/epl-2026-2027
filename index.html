@@ -1661,7 +1661,7 @@ function refreshAllViews(){
     else if(active==='tab-results') renderResults();
     else if(active==='tab-members') renderMembers();
     else if(active==='tab-add') buildAddPredRows();
-    const mc=document.getElementById('matchCountBadge'); if(mc) mc.textContent=matches.length;
+    const mc=document.getElementById('matchCountBadge'); if(mc) mc.textContent=matches.filter(m=>!m.result).length;
     const memc=document.getElementById('memberCountBadge'); if(memc) memc.textContent=MEMBERS.length;
     const pc=document.getElementById('pendingCountBadge'); if(pc) pc.textContent=matches.filter(m=>!m.result).length;
     const sf=document.getElementById('sfooter'); if(sf) sf.textContent=`⚽ World Cup 2026 · ${MEMBERS.length} thành viên`;
@@ -2140,11 +2140,17 @@ function clearResult(mid){
 }
 
 function renderMatches(){
+  const pending = matches.filter(m=>!m.result);
   if(matches.length===0){
     document.getElementById('matchList').innerHTML='<div class="empty-state"><div class="ei">⚽</div>Chưa có trận đấu nào. Hãy thêm trận đầu tiên!</div>';
     return;
   }
-  const sorted = [...matches].reverse();
+  if(pending.length===0){
+    document.getElementById('matchList').innerHTML='<div class="empty-state"><div class="ei">🎉</div>Tất cả trận đấu đã có kết quả!<div style="font-size:13px;color:var(--muted);margin-top:8px">Xem chi tiết ở tab <b>Kết quả</b></div></div>';
+    document.getElementById('matchCountBadge').textContent = 0;
+    return;
+  }
+  const sorted = [...pending].reverse();
   document.getElementById('matchList').innerHTML = sorted.map(m=>{
     const done = !!m.result;
     const locked = isEffectiveLocked(m);   // thủ công HOẶC tự động
@@ -2298,7 +2304,7 @@ function renderMatches(){
       </div>
     </div>`;
   }).join('');
-  document.getElementById('matchCountBadge').textContent = matches.length;
+  document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
 }
 
 // ── ADD MATCH FORM ──
@@ -2377,7 +2383,7 @@ function addMatch(){
   renderRank();
   showToast(`✅ Đã thêm trận ${home} vs ${away}!`,'green');
   clearAddForm();
-  document.getElementById('matchCountBadge').textContent = matches.length;
+  document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
 }
 
 function onHandicapValChange(){
@@ -2611,7 +2617,7 @@ function confirmDeleteMatch(){
   save(); renderMatches(); renderRank();
   closeModal('deleteMatchModal');
   showToast('🗑️ Đã xoá trận đấu','red');
-  document.getElementById('matchCountBadge').textContent = matches.length;
+  document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
 }
 
 // ── MEMBERS ──
@@ -2781,7 +2787,7 @@ buildAddPredRows();
 renderRank();
 renderMatches();
 checkResponsive();
-document.getElementById('matchCountBadge').textContent=matches.length;
+document.getElementById('matchCountBadge').textContent=matches.filter(m=>!m.result).length;
 document.getElementById('memberCountBadge').textContent=MEMBERS.length;
 document.getElementById('pendingCountBadge').textContent=matches.filter(m=>!m.result).length;
 document.getElementById('handicapFavor').value='none'; // mặc định kèo bằng → không ai được chấp
