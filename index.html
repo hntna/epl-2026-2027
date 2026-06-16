@@ -534,11 +534,7 @@ body.dark-mode .vs-center { background:linear-gradient(135deg, #334155, #475569)
 .filter-tab:hover{color:var(--text)}
 .filter-tab.active{background:var(--surface);color:var(--primary-text);box-shadow:0 2px 4px rgba(0,0,0,0.05);font-weight:800}
 
-.result-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:24px;overflow:hidden;box-shadow:var(--shadow-sm);transition:all .3s ease;}
-.result-card:hover{box-shadow:var(--shadow)}
-.result-card.done{border:1px solid var(--green); box-shadow:0 4px 12px rgba(16,185,129,0.1)}
-.result-card-header{display:flex;align-items:flex-start;gap:12px;padding:20px 24px;background:var(--surface2);border-bottom:1px solid var(--border)}
-.result-card-body{padding:24px}
+
 
 .score-entry-row{display:flex;align-items:center;justify-content:center;gap:24px;margin-bottom:24px}
 .score-team{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;min-width:0;flex:1}
@@ -739,8 +735,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   .pbet{font-size:12px;padding:10px 4px}
   .pred-btns{gap:6px}
 
-  .result-card-header{padding:14px 16px}
-  .result-card-body{padding:16px}
+
   .score-input-big{width:56px;height:56px;font-size:28px;border-radius:12px}
   .form-card{padding:20px 16px}
   .filter-tab{font-size:12px;padding:8px 12px}
@@ -1966,6 +1961,10 @@ function renderRank(){
 let resultFilter = 'pending'; // 'pending' | 'done' | 'all'
 
 function renderResults(){
+  // Remember currently open accordion
+  const openEl = document.querySelector('#resultsList .match-item.is-open');
+  const openId = openEl ? openEl.id : null;
+
   const filtered = resultFilter === 'all' ? matches
     : resultFilter === 'done' ? matches.filter(m=>m.result)
     : matches.filter(m=>!m.result);
@@ -1990,19 +1989,33 @@ function renderResults(){
     return;
   }
 
-  html += filtered.map((m,idx)=>{
+  const sorted = [...filtered].reverse(); // Sắp xếp trận gần nhất lên đầu
+  html += '<div class="match-accordion">';
+
+  html += sorted.map((m,idx)=>{
     const done = !!m.result;
     const hcLabel = parseFloat(m.handicapVal)===0 ? 'Chấp bằng'
       : `${m.handicapFavor==='away'?m.away:m.home} nhận ${m.handicapVal}`;
     const mid = m.id;
+    let shortDate = m.date || '';
+    if(shortDate.includes('-')) {
+      let p = shortDate.split('-');
+      if(p.length===3) shortDate = p[2]+'/'+p[1];
+    }
+    const scoreDisplay = done ? `${m.result.home} – ${m.result.away}` : 'vs';
+
+    // Status tag
+    const statusTag = done
+      ? `<span class="mh-tag mh-tag-open" style="background:var(--green-dim);color:var(--green)">✅ Có KQ</span>`
+      : `<span class="mh-tag mh-tag-date" style="background:var(--orange-dim);color:var(--orange)">⏳ Chờ KQ</span>`;
 
     // Preview kết quả kèo nếu đã có
     let previewHtml = '';
     if(done){
       const r = handicapResultLabel(m.result.home, m.result.away, m.handicapVal, m.handicapFavor, m);
-      previewHtml = `<div class="result-preview-bar ${r.cls}">${r.text} · Tỷ số: ${m.result.home} – ${m.result.away}</div>`;
+      previewHtml = `<div class="result-preview-bar ${r.cls}" style="margin:16px 0">${r.text} · Tỷ số: ${m.result.home} – ${m.result.away}</div>`;
     } else {
-      previewHtml = `<div class="result-preview-bar" id="prev_${mid}">Nhập tỷ số bên trên để xem kết quả kèo</div>`;
+      previewHtml = `<div class="result-preview-bar" id="prev_${mid}" style="margin:16px 0">Nhập tỷ số bên trên để xem kết quả kèo</div>`;
     }
 
     // Member predictions + verdicts (Cách B: so với nhà cái)
@@ -2056,22 +2069,26 @@ function renderResults(){
       </div>`;
     }).join('');
 
-    return `<div class="result-card ${done?'done':''}">
-      <div class="result-card-header">
-        <div class="match-no">#${matches.indexOf(m)+1}</div>
-        <div class="match-meta" style="flex:1;display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-          <span style="font-size:14px;font-weight:700;color:var(--text)">${getFlag(m.home)} ${m.home}</span>
-          <span style="color:var(--muted);font-size:12px">vs</span>
-          <span style="font-size:14px;font-weight:700;color:var(--text)">${getFlag(m.away)} ${m.away}</span>
-          <span class="tag tag-stage">${m.stage}</span>
-          <span class="tag tag-date">📅 ${m.date}${m.time?' '+m.time:''}</span>
-          <span class="tag tag-handicap">🎯 ${hcLabel}</span>
-          <span class="tag tag-bet">💰 ${fmtMoney(m.bet)}</span>
-          <span class="tag ${done?'tag-done':'tag-open'}">${done?'✅ Có KQ':'⏳ Chờ KQ'}</span>
+    return `<div class="match-item ${done?'done':''}" id="result_${mid}" style="${done?'border:1px solid var(--green);box-shadow:0 4px 12px rgba(16,185,129,0.1)':''}">
+      <div class="match-header" onclick="toggleResult('${mid}')">
+        <span class="mh-no">#${matches.indexOf(m)+1}</span>
+        <div class="mh-teams">
+          <div class="mh-teams-line">
+            ${getFlag(m.home)} ${m.home} <span class="mh-vs">${scoreDisplay}</span> ${getFlag(m.away)} ${m.away}
+          </div>
+          <div class="mh-info">
+            <span class="mh-tag mh-tag-date">${shortDate}${m.time?' '+m.time:''}</span>
+            <span class="mh-tag mh-tag-handicap">${hcLabel}</span>
+            <span class="mh-tag mh-tag-bet">${fmtMoney(m.bet)}</span>
+            ${statusTag}
+          </div>
+        </div>
+        <div class="mh-right">
+          <span class="mh-arrow">▼</span>
         </div>
       </div>
-      <div class="result-card-body">
-        <div class="banker-bar">
+      <div class="match-body">
+        <div class="banker-bar" style="margin:16px 0">
           <span class="bb-label">🏦 Nhà cái</span>
           ${bankerControl(m)}
           ${!(m.banker)?'<span class="banker-warn">— Chọn nhà cái để tính thưởng/phạt</span>':''}
@@ -2116,8 +2133,26 @@ function renderResults(){
       </div>
     </div>`;
   }).join('');
+  html += '</div>';
 
   document.getElementById('resultsList').innerHTML = html;
+
+  // Restore currently open accordion
+  if(openId){
+    const el = document.getElementById(openId);
+    if(el) el.classList.add('is-open');
+  }
+}
+
+// Toggle accordion for results
+function toggleResult(id){
+  const el = document.getElementById('result_'+id);
+  if(!el) return;
+  const wasOpen = el.classList.contains('is-open');
+  // Close all others
+  document.querySelectorAll('#resultsList .match-item.is-open').forEach(e=>e.classList.remove('is-open'));
+  // Toggle this one
+  if(!wasOpen) el.classList.add('is-open');
 }
 
 function setResultFilter(f){
