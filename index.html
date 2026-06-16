@@ -1933,12 +1933,29 @@ function renderRank(){
   const leader = rows[0];
   const loser  = rows[rows.length-1];
   const fmtSigned = v => (v>=0?'+':'−')+fmtMoney(Math.abs(v));
+  const totalFund = rows.filter(r=>r.net<0).reduce((sum,r)=>sum+Math.abs(r.net), 0);
 
   document.getElementById('rankStats').innerHTML=`
     <div class="stat-card"><div><div class="s-label">⚽ Tổng Trận</div><div class="s-value">${totalMatches}</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">✅ ${doneMatches} đã có KQ</div></div></div>
     <div class="stat-card"><div><div class="s-label">👥 Thành Viên</div><div class="s-value">${MEMBERS.length}</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">🎮 Đang tham gia</div></div></div>
-    <div class="stat-card"><div><div class="s-label">🏆 Dẫn Đầu</div><div class="s-value">${leader?fmtSigned(leader.net):'—'}</div><div style="display:inline-block;margin-top:6px;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,0.25);font-size:12px;color:#fff;font-weight:700">👑 ${leader?leader.name:'—'}</div></div></div>
-    <div class="stat-card"><div><div class="s-label">📉 Lỗ Nhất</div><div class="s-value">${loser?fmtSigned(loser.net):'—'}</div><div style="display:inline-block;margin-top:6px;padding:2px 10px;border-radius:99px;background:rgba(255,255,255,0.25);font-size:12px;color:#fff;font-weight:700">😢 ${loser?loser.name:'—'}</div></div></div>
+    <div class="stat-card" style="padding:16px; align-items:stretch"><div style="display:flex;flex-direction:column;gap:8px;width:100%">
+      <div class="s-label" style="text-align:left;margin-bottom:2px">🏆 Thành tích</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:8px">
+        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8)">Tốt nhất</span>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:800;color:#fff">${leader?fmtSigned(leader.net):'—'}</div>
+          <div style="font-size:10px;opacity:0.7">${leader?leader.name:'—'}</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:8px">
+        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8)">Kém nhất</span>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:800;color:#fff">${loser?fmtSigned(loser.net):'—'}</div>
+          <div style="font-size:10px;opacity:0.7">${loser?loser.name:'—'}</div>
+        </div>
+      </div>
+    </div></div>
+    <div class="stat-card"><div><div class="s-label">💰 Tổng Quỹ</div><div class="s-value" style="color:var(--gold)">${fmtMoney(totalFund)}</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">Thu từ người âm điểm</div></div></div>
   `;
 
   const medals=['🥇','🥈','🥉'];
