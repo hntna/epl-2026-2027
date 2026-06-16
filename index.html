@@ -1935,27 +1935,45 @@ function renderRank(){
   const fmtSigned = v => (v>=0?'+':'−')+fmtMoney(Math.abs(v));
   const totalFund = rows.filter(r=>r.net<0).reduce((sum,r)=>sum+Math.abs(r.net), 0);
 
+  // Tính toán tiến độ giải đấu
+  const totalWCMatches = 104;
+  const progressPct = Math.min(100, Math.round((doneMatches / totalWCMatches) * 100));
+
   document.getElementById('rankStats').innerHTML=`
-    <div class="stat-card"><div><div class="s-label">⚽ Tổng Trận</div><div class="s-value">${totalMatches}</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">✅ ${doneMatches} đã có KQ</div></div></div>
-    <div class="stat-card"><div><div class="s-label">👥 Thành Viên</div><div class="s-value">${MEMBERS.length}</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">🎮 Đang tham gia</div></div></div>
-    <div class="stat-card" style="padding:16px; align-items:stretch"><div style="display:flex;flex-direction:column;gap:8px;width:100%">
-      <div class="s-label" style="text-align:left;margin-bottom:2px">🏆 Thành tích</div>
-      <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:8px">
-        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8)">Tốt nhất</span>
-        <div style="text-align:right">
-          <div style="font-size:13px;font-weight:800;color:#fff">${leader?fmtSigned(leader.net):'—'}</div>
-          <div style="font-size:10px;opacity:0.7">${leader?leader.name:'—'}</div>
-        </div>
+    <div class="stat-card" style="padding:16px"><div style="width:100%">
+      <div class="s-label" style="text-align:left;margin-bottom:8px;display:flex;justify-content:space-between">
+        <span>⚽ Tiến độ giải đấu</span>
+        <span style="color:var(--text);font-weight:700">${progressPct}%</span>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.1);padding:6px 12px;border-radius:8px">
-        <span style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.8)">Kém nhất</span>
-        <div style="text-align:right">
-          <div style="font-size:13px;font-weight:800;color:#fff">${loser?fmtSigned(loser.net):'—'}</div>
-          <div style="font-size:10px;opacity:0.7">${loser?loser.name:'—'}</div>
+      <div style="width:100%;height:8px;background:rgba(255,255,255,0.1);border-radius:4px;overflow:hidden;margin-bottom:8px">
+        <div style="height:100%;width:${progressPct}%;background:var(--primary);border-radius:4px;transition:width 1s ease"></div>
+      </div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.75);font-weight:600;text-align:left">
+        Đã hoàn thành ${doneMatches}/${totalWCMatches} trận
+      </div>
+    </div></div>
+
+    <div class="stat-card" style="padding:16px; align-items:stretch"><div style="display:flex;flex-direction:column;width:100%;height:100%">
+      <div class="s-label" style="text-align:left;margin-bottom:12px">🏆 Thành tích</div>
+      <div style="display:flex;flex:1;align-items:center;background:rgba(255,255,255,0.05);border-radius:8px;padding:8px">
+        <div style="flex:1;text-align:center;padding-right:8px;border-right:1px solid rgba(255,255,255,0.1);min-width:0">
+          <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px;font-weight:700">Tốt nhất</div>
+          <div style="font-size:14px;font-weight:800;color:var(--green);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${leader?fmtSigned(leader.net):'—'}</div>
+          <div style="font-size:11px;opacity:0.9;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${leader?leader.name:'—'}</div>
+        </div>
+        <div style="flex:1;text-align:center;padding-left:8px;min-width:0">
+          <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.6);margin-bottom:4px;font-weight:700">Kém nhất</div>
+          <div style="font-size:14px;font-weight:800;color:var(--red);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${loser?fmtSigned(loser.net):'—'}</div>
+          <div style="font-size:11px;opacity:0.9;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${loser?loser.name:'—'}</div>
         </div>
       </div>
     </div></div>
-    <div class="stat-card"><div><div class="s-label">💰 Tổng Quỹ</div><div class="s-value" style="color:var(--gold)">${fmtMoney(totalFund)}</div><div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">Thu từ người âm điểm</div></div></div>
+
+    <div class="stat-card"><div>
+      <div class="s-label">💰 Tổng Quỹ</div>
+      <div class="s-value" style="color:var(--gold)">${fmtMoney(totalFund)}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:4px;font-weight:600">👥 Tham gia: ${MEMBERS.length} thành viên</div>
+    </div></div>
   `;
 
   const medals=['🥇','🥈','🥉'];
