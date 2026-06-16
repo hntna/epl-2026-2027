@@ -1940,43 +1940,43 @@ function renderRank(){
   const progressPct = Math.min(100, Math.round((doneMatches / totalWCMatches) * 100));
 
   document.getElementById('rankStats').innerHTML=`
-    <div class="stat-card" style="padding:18px;background:#1e293b;box-shadow:0 6px 20px rgba(0,0,0,0.2)"><div style="width:100%">
-      <div class="s-label" style="text-align:left;margin-bottom:12px;display:flex;justify-content:space-between;color:#94a3b8">
+    <div class="stat-card"><div style="width:100%">
+      <div class="s-label" style="display:flex;justify-content:space-between;margin-bottom:8px">
         <span>⚽ Tiến độ giải đấu</span>
-        <span style="color:var(--primary);font-weight:800">${progressPct}%</span>
+        <span style="color:#fff;font-weight:800">${progressPct}%</span>
       </div>
-      <div style="width:100%;height:10px;background:rgba(0,0,0,0.3);border-radius:6px;overflow:hidden;margin-bottom:10px;box-shadow:inset 0 1px 3px rgba(0,0,0,0.2)">
-        <div style="height:100%;width:${progressPct}%;background:linear-gradient(90deg, #F59E0B, #F97316);border-radius:6px;transition:width 1s ease"></div>
+      <div style="width:100%;height:6px;background:rgba(255,255,255,0.3);border-radius:4px;overflow:hidden;margin-bottom:8px">
+        <div style="height:100%;width:${progressPct}%;background:#fff;border-radius:4px;transition:width 1s ease"></div>
       </div>
-      <div style="font-size:12px;color:#cbd5e1;font-weight:600;text-align:left">
-        Đã hoàn thành ${doneMatches}/${totalWCMatches} trận
-      </div>
-    </div></div>
-
-    <div class="stat-card" style="padding:16px;background:#1e293b;box-shadow:0 6px 20px rgba(0,0,0,0.2);align-items:stretch"><div style="display:flex;flex-direction:column;width:100%;height:100%">
-      <div class="s-label" style="text-align:left;margin-bottom:12px;color:#94a3b8">🏆 Thành tích</div>
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;justify-content:center">
-        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(16, 185, 129, 0.1);border-left:3px solid var(--green);padding:8px 12px;border-radius:6px">
-          <div style="display:flex;flex-direction:column">
-            <span style="font-size:10px;text-transform:uppercase;color:var(--green);font-weight:800">Tốt nhất</span>
-            <span style="font-size:13px;font-weight:700;color:#fff">${leader?leader.name:'—'}</span>
-          </div>
-          <span style="font-size:15px;font-weight:800;color:var(--green)">${leader?fmtSigned(leader.net):'—'}</span>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(239, 68, 68, 0.1);border-left:3px solid var(--red);padding:8px 12px;border-radius:6px">
-          <div style="display:flex;flex-direction:column">
-            <span style="font-size:10px;text-transform:uppercase;color:var(--red);font-weight:800">Kém nhất</span>
-            <span style="font-size:13px;font-weight:700;color:#fff">${loser?loser.name:'—'}</span>
-          </div>
-          <span style="font-size:15px;font-weight:800;color:var(--red)">${loser?fmtSigned(loser.net):'—'}</span>
-        </div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:600">
+        ✅ Đã hoàn thành ${doneMatches}/${totalWCMatches} trận
       </div>
     </div></div>
 
-    <div class="stat-card" style="padding:18px;background:#1e293b;box-shadow:0 6px 20px rgba(0,0,0,0.2);display:flex;flex-direction:column;justify-content:center"><div style="width:100%;text-align:center">
-      <div class="s-label" style="color:#94a3b8;margin-bottom:8px">💰 Tổng Quỹ</div>
-      <div class="s-value" style="color:var(--gold);font-size:36px;text-shadow:0 2px 10px rgba(250,204,21,0.2)">${fmtMoney(totalFund)}</div>
-      <div style="font-size:13px;color:#cbd5e1;margin-top:10px;font-weight:600;display:inline-flex;align-items:center;background:rgba(255,255,255,0.05);padding:4px 12px;border-radius:20px">👥 Đang tham gia: <span style="color:#fff;margin-left:4px">${MEMBERS.length}</span></div>
+    <div class="stat-card"><div style="width:100%">
+      <div class="s-label" style="margin-bottom:8px">🏆 Thành tích</div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.15);padding:6px 12px;border-radius:6px">
+          <div style="display:flex;flex-direction:column">
+            <span style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.7);font-weight:700">Tốt nhất</span>
+            <span style="font-size:13px;font-weight:700">${leader?leader.name:'—'}</span>
+          </div>
+          <span style="font-size:14px;font-weight:800">${leader?fmtSigned(leader.net):'—'}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,0.15);padding:6px 12px;border-radius:6px">
+          <div style="display:flex;flex-direction:column">
+            <span style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.7);font-weight:700">Kém nhất</span>
+            <span style="font-size:13px;font-weight:700">${loser?loser.name:'—'}</span>
+          </div>
+          <span style="font-size:14px;font-weight:800">${loser?fmtSigned(loser.net):'—'}</span>
+        </div>
+      </div>
+    </div></div>
+
+    <div class="stat-card"><div style="width:100%">
+      <div class="s-label">💰 Tổng Quỹ</div>
+      <div class="s-value">${fmtMoney(totalFund)}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);margin-top:4px;font-weight:600">👥 Tham gia: ${MEMBERS.length} thành viên</div>
     </div></div>
   `;
 
