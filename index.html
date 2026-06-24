@@ -1883,7 +1883,7 @@ function settleVerdict(mult, stake){
 function bankerNetForMatch(m){
   if(!m.result || !m.banker) return 0;
   const stake = parseInt(m.bet)||0;
-  const matchTime = parseInt(m.id.slice(1,14)) || 0;
+  const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
   let net = 0;
   memberNames().forEach(name=>{
     if(name === m.banker) return;
@@ -1910,7 +1910,7 @@ function getMemberStats(memberId){
   let correct=0, wrong=0, skipped=0, push=0, total=0, net=memberObj.startBalance||0, bankerCount=0, bankerNet=0;
   matches.forEach(m=>{
     if(!m.result) return;            // chỉ tính trận đã có KQ
-    const matchTime = parseInt(m.id.slice(1,14)) || 0;
+    const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
     if(memberObj.createdAt && matchTime < memberObj.createdAt) return; // Không tính các trận diễn ra trước khi tham gia
     const banker = m.banker || '';
     if(!banker) return;              // trận chưa chọn nhà cái → chưa tính tiền
