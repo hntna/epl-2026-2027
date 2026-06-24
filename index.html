@@ -861,7 +861,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       </div>
       <span class="admin-badge is-guest" id="adminBadge">🛡️ Admin</span>
       <button class="admin-btn" id="adminLoginBtn" onclick="openAdminModal()">🔐 Admin</button>
-      <button class="theme-btn" onclick="toggleTheme()" title="Đổi giao diện">🌙</button>
+
     </div>
   </div>
 
@@ -2193,122 +2193,76 @@ function renderRank(){
   const fmtSigned = v => (v>=0?'+':'−')+fmtMoney(Math.abs(v));
   const totalFund = globalStats.totalFund;
 
-  let groupCard = '';
-  let knockoutCard = '';
+  let activeCardHTML = '';
 
-  if (globalStats.inKnockoutPhase) {
+  if (activeRankTab === 'group') {
     const gSorted = [...globalStats.groupStats].sort((a,b)=>b.net-a.net);
-    const gLeader = gSorted[0];
-    const gLoser  = gSorted[gSorted.length-1];
-    
+    const gLeader = gSorted.length ? gSorted[0] : null;
+    const gLoser  = gSorted.length ? gSorted[gSorted.length-1] : null;
+    activeCardHTML = `
+         <div class="stat-card" style="background: linear-gradient(135deg, #f59e0b, #d97706); padding: 10px;">
+            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.95);margin-bottom:8px;text-align:center;text-transform:uppercase;letter-spacing:0.5px;">🏆 THÀNH TÍCH VÒNG BẢNG</div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+               <div style="display:flex; justify-content:space-between; align-items:center; background: #9333ea; border-radius:8px; padding:8px 10px; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                     <span style="font-size:9px;color:rgba(255,255,255,0.9);font-weight:800;text-transform:uppercase;background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">TỐT NHẤT</span>
+                     <span style="font-size:14px;font-weight:800;color:#fff;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${gLeader?gLeader.name:'—'}</span>
+                  </div>
+                  <div class="rc-money" style="font-size:14px;font-weight:800;color:#fff;">${gLeader?fmtSigned(gLeader.net):'—'}</div>
+               </div>
+               <div style="display:flex; justify-content:space-between; align-items:center; background: #e11d48; border-radius:8px; padding:8px 10px; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                     <span style="font-size:9px;color:rgba(255,255,255,0.9);font-weight:800;text-transform:uppercase;background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">XA BỜ</span>
+                     <span style="font-size:14px;font-weight:800;color:#fff;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${gLoser?gLoser.name:'—'}</span>
+                  </div>
+                  <div class="rc-money" style="font-size:14px;font-weight:800;color:#fff;">${gLoser?fmtSigned(gLoser.net):'—'}</div>
+               </div>
+            </div>
+         </div>
+      `;
+  } else {
     const kSorted = [...globalStats.knockoutStats].sort((a,b)=>b.net-a.net);
-    const kLeader = kSorted[0];
-    const kLoser  = kSorted[kSorted.length-1];
-
-    groupCard = `
-         <div class="stat-card" style="background-color:var(--surface); background-image:linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.02)); border:1px solid var(--border); padding:16px; position:relative; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-radius:12px;">
-            <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold);"></div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">🏆 Vòng Bảng</div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-               <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                     <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;">🚀</div>
-                     <div>
-                        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Dẫn đầu</div>
-                        <div style="font-size:14px;font-weight:800;color:var(--text);">${gLeader?gLeader.name:'—'}</div>
-                     </div>
+    const kLeader = kSorted.length ? kSorted[0] : null;
+    const kLoser  = kSorted.length ? kSorted[kSorted.length-1] : null;
+    activeCardHTML = `
+         <div class="stat-card" style="background: linear-gradient(135deg, #10b981, #059669); padding: 10px;">
+            <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.95);margin-bottom:8px;text-align:center;text-transform:uppercase;letter-spacing:0.5px;">🏆 THÀNH TÍCH KNOCKOUT</div>
+            <div style="display:flex; flex-direction:column; gap:4px;">
+               <div style="display:flex; justify-content:space-between; align-items:center; background: #9333ea; border-radius:8px; padding:8px 10px; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                     <span style="font-size:9px;color:rgba(255,255,255,0.9);font-weight:800;text-transform:uppercase;background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">TỐT NHẤT</span>
+                     <span style="font-size:14px;font-weight:800;color:#fff;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${kLeader?kLeader.name:'—'}</span>
                   </div>
-                  <div class="rc-money" style="font-size:15px;font-weight:800;color:var(--green);">${gLeader?fmtSigned(gLeader.net):'—'}</div>
+                  <div class="rc-money" style="font-size:14px;font-weight:800;color:#fff;">${kLeader?fmtSigned(kLeader.net):'—'}</div>
                </div>
-               <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                     <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:14px;">⚓</div>
-                     <div>
-                        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Xa bờ</div>
-                        <div style="font-size:14px;font-weight:800;color:var(--text);">${gLoser?gLoser.name:'—'}</div>
-                     </div>
+               <div style="display:flex; justify-content:space-between; align-items:center; background: #e11d48; border-radius:8px; padding:8px 10px; box-shadow:0 1px 3px rgba(0,0,0,0.2);">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                     <span style="font-size:9px;color:rgba(255,255,255,0.9);font-weight:800;text-transform:uppercase;background:rgba(0,0,0,0.2);padding:2px 6px;border-radius:4px;">XA BỜ</span>
+                     <span style="font-size:14px;font-weight:800;color:#fff;max-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${kLoser?kLoser.name:'—'}</span>
                   </div>
-                  <div class="rc-money" style="font-size:15px;font-weight:800;color:var(--red);">${gLoser?fmtSigned(gLoser.net):'—'}</div>
+                  <div class="rc-money" style="font-size:14px;font-weight:800;color:#fff;">${kLoser?fmtSigned(kLoser.net):'—'}</div>
                </div>
             </div>
          </div>
       `;
-      knockoutCard = `
-         <div class="stat-card" style="background-color:var(--surface); background-image:linear-gradient(135deg, rgba(16,185,129,0.15), rgba(16,185,129,0.02)); border:1px solid var(--border); padding:16px; position:relative; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-radius:12px;">
-            <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--green);"></div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">🏆 Knockout</div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-               <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                     <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;">🚀</div>
-                     <div>
-                        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Dẫn đầu</div>
-                        <div style="font-size:14px;font-weight:800;color:var(--text);">${kLeader?kLeader.name:'—'}</div>
-                     </div>
-                  </div>
-                  <div class="rc-money" style="font-size:15px;font-weight:800;color:var(--green);">${kLeader?fmtSigned(kLeader.net):'—'}</div>
-               </div>
-               <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                     <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:14px;">⚓</div>
-                     <div>
-                        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Xa bờ</div>
-                        <div style="font-size:14px;font-weight:800;color:var(--text);">${kLoser?kLoser.name:'—'}</div>
-                     </div>
-                  </div>
-                  <div class="rc-money" style="font-size:15px;font-weight:800;color:var(--red);">${kLoser?fmtSigned(kLoser.net):'—'}</div>
-               </div>
-            </div>
-         </div>
-      `;
-    } else {
-      groupCard = `
-         <div class="stat-card" style="background-color:var(--surface); background-image:linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.02)); border:1px solid var(--border); padding:16px; position:relative; overflow:hidden; box-shadow:0 4px 12px rgba(0,0,0,0.05); border-radius:12px;">
-            <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold);"></div>
-            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.5px;">🏆 Thành Tích</div>
-            <div style="display:flex; flex-direction:column; gap:12px;">
-               <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                     <div style="width:32px;height:32px;border-radius:8px;background:rgba(16,185,129,0.1);color:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;">🚀</div>
-                     <div>
-                        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Dẫn đầu</div>
-                        <div style="font-size:14px;font-weight:800;color:var(--text);">${leader?leader.name:'—'}</div>
-                     </div>
-                  </div>
-                  <div class="rc-money" style="font-size:15px;font-weight:800;color:var(--green);">${leader?fmtSigned(leader.net):'—'}</div>
-               </div>
-               <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <div style="display:flex; align-items:center; gap:10px;">
-                     <div style="width:32px;height:32px;border-radius:8px;background:rgba(239,68,68,0.1);color:var(--red);display:flex;align-items:center;justify-content:center;font-size:14px;">⚓</div>
-                     <div>
-                        <div style="font-size:10px;color:var(--muted);font-weight:600;text-transform:uppercase;margin-bottom:2px;">Xa bờ</div>
-                        <div style="font-size:14px;font-weight:800;color:var(--text);">${loser?loser.name:'—'}</div>
-                     </div>
-                  </div>
-                  <div class="rc-money" style="font-size:15px;font-weight:800;color:var(--red);">${loser?fmtSigned(loser.net):'—'}</div>
-               </div>
-            </div>
-         </div>
-      `;
-    }
+  }
 
     const fundCard = `
-      <div class="stat-card" style="background: linear-gradient(135deg, #60a5fa, #3b82f6); border:1px solid rgba(255,255,255,0.1); padding:16px; display:flex; flex-direction:column; justify-content:center; position:relative; overflow:hidden; box-shadow:0 4px 12px rgba(59,130,246,0.3); border-radius:12px;">
-         <div style="position:absolute;top:0;left:0;width:4px;height:100%;background:rgba(255,255,255,0.8);"></div>
-         <div style="font-size:11px;font-weight:800;color:rgba(255,255,255,0.9);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px;">💰 TỔNG QUỸ ${globalStats.inKnockoutPhase ? '(GỘP)' : ''}</div>
-         <div class="rc-money" style="font-family:var(--font-display);font-size:32px;font-weight:900;line-height:1;color:#fff;justify-content:flex-start;margin-bottom:${globalStats.inKnockoutPhase ? '16px' : '0'};">${fmtMoney(totalFund)}</div>
-         ${globalStats.inKnockoutPhase ? `
-         <div style="display:flex; gap:16px; border-top:1px dashed rgba(255,255,255,0.3); padding-top:12px; margin-top:auto;">
-            <div style="flex:1;">
-               <div style="font-size:10px;color:rgba(255,255,255,0.8);font-weight:700;margin-bottom:4px;text-transform:uppercase;">VÒNG BẢNG</div>
-               <div class="rc-money" style="font-size:15px;color:#fff;font-weight:800;justify-content:flex-start;">${fmtMoney(globalStats.groupFund)}</div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #3b82f6, #2563eb); padding: 12px 14px;">
+         <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+               <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,0.8);margin-bottom:4px;text-transform:uppercase;">💰 TỔNG QUỸ (GỘP)</div>
+               <div class="rc-money" style="font-family:var(--font-display);font-size:24px;font-weight:900;line-height:1;color:#fff;justify-content:flex-start;">${fmtMoney(globalStats.groupFund + globalStats.knockoutFund)}</div>
             </div>
-            <div style="flex:1;">
-               <div style="font-size:10px;color:rgba(255,255,255,0.8);font-weight:700;margin-bottom:4px;text-transform:uppercase;">KNOCKOUT</div>
-               <div class="rc-money" style="font-size:15px;color:#fff;font-weight:800;justify-content:flex-start;">${fmtMoney(globalStats.knockoutFund)}</div>
+            <div style="background:rgba(0,0,0,0.15); padding:6px 10px; border-radius:8px; box-shadow:inset 0 1px 3px rgba(0,0,0,0.1); min-width: 110px;">
+               <div style="font-size:10px;color:rgba(255,255,255,0.9);font-weight:800;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                 <span>Bảng:</span> <span class="rc-money" style="color:#fff;font-family:var(--font-display);">${fmtMoney(globalStats.groupFund)}</span>
+               </div>
+               <div style="font-size:10px;color:rgba(255,255,255,0.9);font-weight:800;display:flex;justify-content:space-between;align-items:center;gap:6px;">
+                 <span>Knock:</span> <span class="rc-money" style="color:#fff;font-family:var(--font-display);">${fmtMoney(globalStats.knockoutFund)}</span>
+               </div>
             </div>
          </div>
-         ` : ''}
       </div>
     `;
 
@@ -2316,11 +2270,12 @@ function renderRank(){
     const totalWCMatches = 104;
     const progressPct = Math.min(100, Math.round((doneMatches / totalWCMatches) * 100));
 
+    const currentThemeIcon = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
     document.getElementById('rankStats').innerHTML=`
       <style>
-        .rank-grid { display:grid; grid-template-columns: 1fr; gap: 16px; margin-bottom:24px; }
+        .rank-grid { display:grid; grid-template-columns: 1fr; gap: 16px; margin-bottom:0px; }
         @media(min-width: 769px){
-           .rank-grid { grid-template-columns: ${globalStats.inKnockoutPhase ? '1fr 1fr 1fr' : '1fr 1.5fr'}; }
+           .rank-grid { grid-template-columns: 1fr 1.5fr; }
         }
         .rc-money { display:flex; justify-content:center; align-items:center; gap:4px; }
         .rc-money img { width: 14px !important; height: 14px !important; }
@@ -2329,7 +2284,10 @@ function renderRank(){
       <div style="grid-column: 1 / -1; margin-bottom:16px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px; font-weight:800; color:var(--text);">
           <span style="display:flex;align-items:center;gap:4px">⏱️ TIẾN ĐỘ GIẢI ĐẤU</span>
-          <span style="color:var(--blue);">${progressPct}% (${doneMatches}/${totalWCMatches} trận)</span>
+          <span style="display:flex;align-items:center;gap:12px">
+            <span style="color:var(--blue);">${progressPct}% (${doneMatches}/${totalWCMatches} trận)</span>
+            <button class="theme-btn" onclick="toggleTheme()" title="Đổi giao diện" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0;display:flex;align-items:center;">${currentThemeIcon}</button>
+          </span>
         </div>
         <div style="width:100%;height:6px;background:var(--border);border-radius:4px;overflow:hidden;">
           <div style="height:100%;width:${progressPct}%;background:linear-gradient(90deg, var(--blue), #60a5fa);border-radius:4px;"></div>
@@ -2338,8 +2296,7 @@ function renderRank(){
 
       <div class="rank-grid" style="grid-column: 1 / -1;">
         ${fundCard}
-        ${groupCard}
-        ${knockoutCard}
+        ${activeCardHTML}
       </div>
     `;
 
@@ -3279,7 +3236,7 @@ function showToast(msg,type=''){
 function toggleTheme(){
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
-  document.querySelector('.theme-btn').textContent = isDark ? '☀️' : '🌙';
+  document.querySelectorAll('.theme-btn').forEach(btn => btn.textContent = isDark ? '☀️' : '🌙');
   localStorage.setItem('wc2026_theme', isDark ? 'dark' : 'light');
 }
 
@@ -3296,7 +3253,7 @@ load();
 checkAdminSession();
 checkMemberSession();
 initCloud();   // bật đồng bộ cloud (nếu đã cấu hình Firebase)
-if(localStorage.getItem('wc2026_theme')==='dark'){document.body.classList.add('dark-mode');document.querySelector('.theme-btn').textContent='☀️';}
+if(localStorage.getItem('wc2026_theme')==='dark'){document.body.classList.add('dark-mode');document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent='☀️');}
 document.getElementById('matchDate').value=new Date().toISOString().slice(0,10);
 initTeamSelects();
 buildAddPredRows();
