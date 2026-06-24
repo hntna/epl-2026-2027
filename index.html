@@ -1443,6 +1443,18 @@ function renderProfile() {
           <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">❌ Số trận sai</div>
           <div style="font-size:20px; font-weight:800; color:var(--red);">${losses}</div>
         </div>
+        <div style="grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border);">
+            <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">💼 Làm cái</div>
+            <div style="font-size:16px; font-weight:800;">${stats ? stats.bankerCount : 0} trận</div>
+          </div>
+          <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border);">
+            <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">💵 Lợi nhuận làm cái</div>
+            <div style="font-size:16px; font-weight:800; color:${(stats && stats.bankerNet > 0) ? 'var(--green)' : (stats && stats.bankerNet < 0) ? 'var(--red)' : 'var(--text)'};">
+              ${(stats && stats.bankerNet > 0) ? '+' : (stats && stats.bankerNet < 0) ? '−' : ''}${fmtMoney(Math.abs(stats ? stats.bankerNet : 0))}
+            </div>
+          </div>
+        </div>
         <div style="grid-column:1 / -1; background:linear-gradient(135deg, var(--surface2), var(--surface3)); padding:16px; border-radius:8px; text-align:center; border:1px solid var(--border);">
           <div style="font-size:13px; color:var(--text2); font-weight:600; margin-bottom:4px;">💰 Lợi Nhuận Gộp (Net)</div>
           <div style="font-size:26px; font-weight:800; color:${net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : 'var(--text)'}; font-family:var(--font-display);">
@@ -1453,8 +1465,15 @@ function renderProfile() {
       
       <!-- Lịch sử dự đoán -->
       <div style="margin-bottom: 24px;">
-        <div style="font-size:14px; font-weight:800; margin-bottom:12px;">🕒 Lịch sử dự đoán</div>
-        <div style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <div style="font-size:14px; font-weight:800;">🕒 Lịch sử dự đoán</div>
+          <div style="display:flex; gap:4px;">
+            <button class="btn" style="padding:4px 8px; font-size:11px; background:var(--primary); color:#fff;" onclick="filterProfileHistory('all', this)">Tất cả</button>
+            <button class="btn" style="padding:4px 8px; font-size:11px; background:var(--surface2); color:var(--text);" onclick="filterProfileHistory('player', this)">Người chơi</button>
+            <button class="btn" style="padding:4px 8px; font-size:11px; background:var(--surface2); color:var(--text);" onclick="filterProfileHistory('banker', this)">Làm cái</button>
+          </div>
+        </div>
+        <div style="max-height: 400px; overflow-y: auto; padding-right: 4px;" id="profile-history-list">
           ${(member.startBalance) ? `
             <div style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
               <div>
@@ -1475,8 +1494,10 @@ function renderProfile() {
             let resultLabel = '';
             let moneyStr = '';
             let color = 'var(--text)';
+            let itemType = 'player';
 
             if (m.banker === currentMember) {
+               itemType = 'banker';
                const bn = bankerNetForMatch(m);
                roleStr = 'Nhà cái';
                if (bn > 0) { resultLabel = 'Thắng'; moneyStr = `+${fmtMoney(bn)}`; color = 'var(--green)'; }
@@ -1499,7 +1520,7 @@ function renderProfile() {
             }
 
             return `
-              <div style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+              <div class="profile-history-item" data-type="${itemType}" style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
                 <div>
                   <div style="font-weight:700; margin-bottom:4px;">${m.home} vs ${m.away}</div>
                   <div style="color:var(--text2); font-size:11px;">${m.date} | ${roleStr}</div>
@@ -2147,7 +2168,12 @@ function renderResults(){
     // Member predictions + verdicts (Cách B: so với nhà cái)
     const banker = m.banker || '';
     const stake = parseInt(m.bet)||0;
-    const orderedNames = banker ? [banker, ...memberNames().filter(n=>n!==banker)] : memberNames();
+    const matchKickoff = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
+    const eligibleNames = memberNames().filter(name => {
+      const mo = MEMBERS.find(x => x.name === name) || {};
+      return !mo.createdAt || matchKickoff >= mo.createdAt;
+    });
+    const orderedNames = banker ? [banker, ...eligibleNames.filter(n=>n!==banker)] : eligibleNames;
     const memberRows = orderedNames.map(name=>{
       const isBanker = (name === banker);
       const p = m.predictions[name];
@@ -3029,6 +3055,25 @@ document.getElementById('memberCountBadge').textContent=MEMBERS.length;
 document.getElementById('pendingCountBadge').textContent=matches.filter(m=>!m.result).length;
 document.getElementById('handicapFavor').value='none'; // mặc định kèo bằng → không ai được chấp
 scheduleAutoLockRefresh();
+
+function filterProfileHistory(type, btn) {
+  const list = document.getElementById('profile-history-list');
+  if(!list) return;
+  const items = list.querySelectorAll('.profile-history-item');
+  items.forEach(el => {
+    if(type === 'all') el.style.display = 'flex';
+    else if(el.getAttribute('data-type') === type) el.style.display = 'flex';
+    else el.style.display = 'none';
+  });
+  
+  const btns = btn.parentElement.querySelectorAll('button');
+  btns.forEach(b => {
+    b.style.background = 'var(--surface2)';
+    b.style.color = 'var(--text)';
+  });
+  btn.style.background = 'var(--primary)';
+  btn.style.color = '#fff';
+}
 </script>
 </body>
 </html>
