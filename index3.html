@@ -181,9 +181,12 @@ body.dark-mode #sidebar {
 }
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{
-  background:linear-gradient(135deg, var(--primary), #8B5CF6);
-  color:#fff;
-  box-shadow:var(--shadow-colored);
+  background:transparent;
+  color:var(--primary);
+  font-weight:800;
+  border-bottom:2px solid var(--primary);
+  border-radius:0;
+  box-shadow:none;
 }
 .nav-icon{display:none}
 
@@ -205,10 +208,9 @@ body.dark-mode #sidebar {
   padding-top:var(--header-h);
 }
 
-/* Ẩn toàn bộ sidebar nav + topbar trên mọi thiết bị */
-#sidebar{ display:none!important; }
+/* Ẩn topbar (dòng trắng) - giữ sidebar navigation */
 #topbar{ display:none!important; }
-#main{ padding-top:0!important; }
+#main{ padding-top:var(--header-h)!important; }
 
 .hamburger{display:none!important}
 .breadcrumb{display:none}
@@ -681,7 +683,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
   .admin-nav-lock{position:absolute;top:4px;left:50%;margin:0;transform:translateX(-24px);font-size:10px}
 
   #main{margin-left:0!important;padding-top:0}
-  #content{padding:0 16px 24px}
+  #content{padding:0 16px calc(var(--bottomnav-h) + env(safe-area-inset-bottom,0px) + 24px)}
 
   #topbar{height:56px;padding:0 16px;gap:8px;position:sticky;top:0;background:rgba(248, 250, 252, 0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--border)}
   body.dark-mode #topbar{background:rgba(30,41,59,0.85)}
