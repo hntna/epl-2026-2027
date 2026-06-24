@@ -1811,7 +1811,7 @@ function initCloud(){
       if(val!==null){
         const arr = Array.isArray(val) ? val : Object.values(val);
         suppressPush = true;
-        MEMBERS = arr.filter(Boolean).map(m=> typeof m==='string' ? {name:m,pwd:''} : {name:m.name, pwd:m.pwd||''});
+        MEMBERS = arr.filter(Boolean).map(m=> typeof m==='string' ? {name:m,pwd:''} : m);
         try{localStorage.setItem(SK_MEMBERS,JSON.stringify(MEMBERS));}catch(e){}
         suppressPush = false;
         checkMemberSession();
@@ -2924,7 +2924,7 @@ function confirmEditMember(){
     // Cập nhật currentMember nếu đang đăng nhập
     if(currentMember===oldName){ currentMember=newName; try{sessionStorage.setItem(SK_MEMBER_ID,newName);}catch(e){} }
   }
-  MEMBERS[idx]={name:newName, pwd:newPwd, startBalance};
+  MEMBERS[idx] = { ...MEMBERS[idx], name:newName, pwd:newPwd, startBalance };
   saveMembers(); save(); buildAddPredRows(); populateAddBanker(); renderMembers(); renderRank();
   closeModal('editMemberModal');
   showToast(`✅ Đã cập nhật thành viên!`,'green');
