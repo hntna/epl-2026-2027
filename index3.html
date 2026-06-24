@@ -205,17 +205,13 @@ body.dark-mode #sidebar {
   padding-top:var(--header-h);
 }
 
-#topbar{
-  height:var(--topbar-h);
-  display:flex;align-items:center;gap:14px;
-  padding:0 24px;
-  position:sticky;top:var(--header-h);z-index:80;
-  background:rgba(248, 250, 252, 0.85); /* Matches light bg */
-  backdrop-filter:blur(8px);
+/* Ẩn sidebar trên desktop (trên mobile nó ở dưới cùng - giữ nguyên) */
+@media(min-width:769px){
+  #sidebar{ display:none!important; }
+  #main{ padding-top:0!important; }
 }
-body.dark-mode #topbar {
-  background:rgba(15, 23, 42, 0.85);
-}
+/* Ẩn topbar (đoạn trắng) trên mọi thiết bị */
+#topbar{ display:none!important; }
 
 .hamburger{display:none!important}
 .breadcrumb{display:none}
@@ -2311,7 +2307,7 @@ function renderRank(){
       String(_d.getMonth()+1).padStart(2,'0') + '-' +
       String(_d.getDate()).padStart(2,'0');
     const actualDoneBySchedule = WC2026_SCHEDULE
-      .filter(([d]) => d <= todayStr)
+      .filter(([d]) => d < todayStr)  // chỉ tính ngày ĐÃ QUA hoàn toàn (trận hôm nay đá theo giờ Mỹ)
       .reduce((sum,[,n]) => sum + n, 0);
     const actualDone = Math.max(actualDoneBySchedule, doneMatches);
     const progressPct = Math.min(100, Math.round((actualDone / totalWCMatches) * 100));
