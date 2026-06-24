@@ -677,7 +677,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
 
   .nav-item::after{display:block;font-size:10px;font-weight:700;margin-top:4px}
   #nav-rank::after{content:'BXH'}
-  #nav-matches::after{content:'Trận đấu'}
+  #nav-matches::after{content:'Bình chọn'}
   #nav-results::after{content:'Kết quả'}
   #nav-add::after{content:'Thêm'}
   #nav-members::after{content:'T.viên'}
@@ -832,7 +832,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <span class="nav-icon">🏆</span> Bảng Xếp Hạng <span class="nav-badge" id="rankCountBadge">0</span>
     </button>
     <button class="nav-item" id="nav-matches" onclick="switchTab('matches')">
-      <span class="nav-icon">⚽</span> Danh Sách Trận <span class="nav-badge" id="matchCountBadge">0</span>
+      <span class="nav-icon">⚽</span> Bình chọn <span class="nav-badge" id="matchCountBadge">0</span>
     </button>
     <button class="nav-item" id="nav-results" onclick="switchTab('results')">
       <span class="nav-icon">📊</span> Nhập Kết Quả <span class="nav-badge" id="pendingCountBadge">0</span>
@@ -888,7 +888,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     <!-- TAB: MATCHES -->
     <div class="tab-pane" id="tab-matches">
       <div class="section-header">
-        <div class="section-title"><span class="section-icon">⚽</span> Danh Sách Trận Đấu</div>
+        <div class="section-title"><span class="section-icon">⚽</span> Bình chọn</div>
       </div>
       <div id="matchList"></div>
     </div>
@@ -1423,45 +1423,60 @@ function renderProfile() {
     `;
   } else if (currentMember) {
     const member = MEMBERS.find(m => m.name === currentMember);
-    const stats = getMemberStats(currentMember);
+    const globalStats = calculateGlobalStats();
+    const inKnockoutPhase = globalStats.inKnockoutPhase;
+    const stats = globalStats.stats[currentMember];
     const net = stats ? stats.net : 0;
-    const wins = stats ? stats.correct : 0;
-    const losses = stats ? stats.wrong : 0;
-    
+    const gStats = globalStats.groupStats.find(g => g.name === currentMember) || stats;
+
+    const renderStatsGrid = (title, s, isKnockout) => {
+      const g_net = s ? s.net : 0;
+      const g_wins = s ? s.correct : 0;
+      const g_losses = s ? s.wrong : 0;
+      return `
+        <div style="margin-bottom:12px;font-size:12px;font-weight:800;color:var(--text2);text-transform:uppercase;display:flex;align-items:center;gap:6px">
+          ${title}
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+          <div style="background:var(--surface2); padding:10px; border-radius:8px; text-align:center;">
+            <div style="font-size:11px; color:var(--text2); font-weight:600; margin-bottom:4px;">✅ Số trận đúng</div>
+            <div style="font-size:16px; font-weight:800; color:var(--green);">${g_wins}</div>
+          </div>
+          <div style="background:var(--surface2); padding:10px; border-radius:8px; text-align:center;">
+            <div style="font-size:11px; color:var(--text2); font-weight:600; margin-bottom:4px;">❌ Số trận sai</div>
+            <div style="font-size:16px; font-weight:800; color:var(--red);">${g_losses}</div>
+          </div>
+          <div style="grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div style="background:var(--surface2); padding:10px; border-radius:8px; text-align:center; border:1px solid var(--border);">
+              <div style="font-size:11px; color:var(--text2); font-weight:600; margin-bottom:4px;">💼 Làm cái</div>
+              <div style="font-size:14px; font-weight:800;">${s ? s.bankerCount : 0} trận</div>
+            </div>
+            <div style="background:var(--surface2); padding:10px; border-radius:8px; text-align:center; border:1px solid var(--border);">
+              <div style="font-size:11px; color:var(--text2); font-weight:600; margin-bottom:4px;">💵 Lợi nhuận làm cái</div>
+              <div style="font-size:14px; font-weight:800; color:${(s && s.bankerNet > 0) ? 'var(--green)' : (s && s.bankerNet < 0) ? 'var(--red)' : 'var(--text)'};">
+                ${(s && s.bankerNet > 0) ? '+' : (s && s.bankerNet < 0) ? '−' : ''}${fmtMoney(Math.abs(s ? s.bankerNet : 0))}
+              </div>
+            </div>
+          </div>
+          <div style="grid-column:1 / -1; background:linear-gradient(135deg, var(--surface2), var(--surface3)); padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border);">
+            <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">💰 Lợi Nhuận Gộp (Net)</div>
+            <div style="font-size:22px; font-weight:800; color:${g_net > 0 ? 'var(--green)' : g_net < 0 ? 'var(--red)' : 'var(--text)'}; font-family:var(--font-display);">
+              ${g_net > 0 ? '+' : g_net < 0 ? '−' : ''}${fmtMoney(Math.abs(g_net))}
+            </div>
+            ${(isKnockout && s && s.knockoutBonus > 0) ? `<div style="font-size:11px;color:var(--gold);margin-top:6px;font-weight:700">🎁 Thưởng Hạng Vòng Bảng: +${fmtMoney(s.knockoutBonus)}</div>` : ''}
+          </div>
+        </div>
+      `;
+    };
+
     html += `
       <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:24px;">
         <div class="avatar ${avColor(currentMember)}" style="width:64px; height:64px; font-size:24px; margin-bottom:12px; border-radius:50%;">${initials(currentMember)}</div>
         <div style="font-size:20px; font-weight:800;">${currentMember}</div>
       </div>
       
-      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
-        <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center;">
-          <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">✅ Số trận đúng</div>
-          <div style="font-size:20px; font-weight:800; color:var(--green);">${wins}</div>
-        </div>
-        <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center;">
-          <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">❌ Số trận sai</div>
-          <div style="font-size:20px; font-weight:800; color:var(--red);">${losses}</div>
-        </div>
-        <div style="grid-column:1 / -1; display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-          <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border);">
-            <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">💼 Làm cái</div>
-            <div style="font-size:16px; font-weight:800;">${stats ? stats.bankerCount : 0} trận</div>
-          </div>
-          <div style="background:var(--surface2); padding:12px; border-radius:8px; text-align:center; border:1px solid var(--border);">
-            <div style="font-size:12px; color:var(--text2); font-weight:600; margin-bottom:4px;">💵 Lợi nhuận làm cái</div>
-            <div style="font-size:16px; font-weight:800; color:${(stats && stats.bankerNet > 0) ? 'var(--green)' : (stats && stats.bankerNet < 0) ? 'var(--red)' : 'var(--text)'};">
-              ${(stats && stats.bankerNet > 0) ? '+' : (stats && stats.bankerNet < 0) ? '−' : ''}${fmtMoney(Math.abs(stats ? stats.bankerNet : 0))}
-            </div>
-          </div>
-        </div>
-        <div style="grid-column:1 / -1; background:linear-gradient(135deg, var(--surface2), var(--surface3)); padding:16px; border-radius:8px; text-align:center; border:1px solid var(--border);">
-          <div style="font-size:13px; color:var(--text2); font-weight:600; margin-bottom:4px;">💰 Lợi Nhuận Gộp (Net)</div>
-          <div style="font-size:26px; font-weight:800; color:${net > 0 ? 'var(--green)' : net < 0 ? 'var(--red)' : 'var(--text)'}; font-family:var(--font-display);">
-            ${net > 0 ? '+' : net < 0 ? '−' : ''}${fmtMoney(Math.abs(net))}
-          </div>
-        </div>
-      </div>
+      ${inKnockoutPhase ? renderStatsGrid('🏆 Thông tin Vòng Loại Trực Tiếp', stats, true) : ''}
+      ${renderStatsGrid('⚽ Thông tin Vòng Bảng', inKnockoutPhase ? gStats : stats, false)}
       
       <!-- Lịch sử dự đoán -->
       <div style="margin-bottom: 24px;">
@@ -1474,7 +1489,7 @@ function renderProfile() {
           </div>
         </div>
         <div style="max-height: 400px; overflow-y: auto; padding-right: 4px;" id="profile-history-list">
-          ${(member.startBalance) ? `
+          ${(!inKnockoutPhase && member.startBalance) ? `
             <div style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
               <div>
                 <div style="font-weight:700; margin-bottom:4px;">💳 Số dư ban đầu</div>
@@ -1485,54 +1500,84 @@ function renderProfile() {
               </div>
             </div>
           ` : ''}
-          ${[...matches].filter(m=>m.result).reverse().map(m => {
-            const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
-            if(member.createdAt && matchTime < member.createdAt) return '';
-            
-            const stake = parseInt(m.bet) || 0;
-            let roleStr = '';
-            let resultLabel = '';
-            let moneyStr = '';
-            let color = 'var(--text)';
-            let itemType = 'player';
-
-            if (m.banker === currentMember) {
-               itemType = 'banker';
-               const bn = bankerNetForMatch(m);
-               roleStr = 'Nhà cái';
-               if (bn > 0) { resultLabel = 'Thắng'; moneyStr = `+${fmtMoney(bn)}`; color = 'var(--green)'; }
-               else if (bn < 0) { resultLabel = 'Thua'; moneyStr = `−${fmtMoney(-bn)}`; color = 'var(--red)'; }
-               else { resultLabel = 'Hòa'; moneyStr = '0'; color = 'var(--muted)'; }
-            } else {
-               const pick = m.predictions[currentMember]?.pick;
-               let pickStr = !pick ? 'Không dự đoán' : (pick==='win' ? m.home : m.away);
-               roleStr = `Người chơi: ${pickStr}`;
-               
-               const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
-               if (mult === null) {
-                 resultLabel = '❌ Thua cả'; moneyStr = `−${fmtMoney(stake)}`; color = 'var(--red)';
-               } else {
-                 const v = settleVerdict(mult, stake);
-                 resultLabel = v.label;
-                 moneyStr = v.amt;
-                 color = v.color;
-               }
-            }
-
-            return `
-              <div class="profile-history-item" data-type="${itemType}" style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                  <div style="font-weight:700; margin-bottom:4px;">${m.home} vs ${m.away}</div>
-                  <div style="color:var(--text2); font-size:11px;">${m.date} | ${roleStr}</div>
-                </div>
-                <div style="text-align:right;">
-                  <div style="font-weight:700; color:${color}; margin-bottom:2px;">${resultLabel}</div>
-                  <div style="font-weight:800; color:${color};">${moneyStr}</div>
-                </div>
+          ${(inKnockoutPhase && stats && stats.knockoutBonus > 0) ? `
+            <div style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--gold);">
+              <div>
+                <div style="font-weight:700; margin-bottom:4px; color:var(--gold);">🎁 Thưởng Xếp Hạng Vòng Bảng</div>
+                <div style="color:var(--text2); font-size:11px;">Số dư đầu vào Knockout</div>
               </div>
-            `;
-          }).join('')}
-          ${[...matches].filter(m=>m.result).length===0 && !member.startBalance ? '<div style="color:var(--text2); font-size:13px; text-align:center; padding:10px;">Chưa có dữ liệu lịch sử.</div>' : ''}
+              <div style="text-align:right;">
+                <div style="font-weight:800; color:var(--gold);">+${fmtMoney(stats.knockoutBonus)}</div>
+              </div>
+            </div>
+          ` : ''}
+          ${(function(){
+            const doneMatches = [...matches].filter(m=>m.result).reverse();
+            const renderMatch = m => {
+              const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
+              if(member.createdAt && matchTime < member.createdAt) return '';
+              
+              const stake = parseInt(m.bet) || 0;
+              let roleStr = '';
+              let resultLabel = '';
+              let moneyStr = '';
+              let color = 'var(--text)';
+              let itemType = 'player';
+
+              if (m.banker === currentMember) {
+                 itemType = 'banker';
+                 const bn = bankerNetForMatch(m);
+                 roleStr = 'Nhà cái';
+                 if (bn > 0) { resultLabel = 'Thắng'; moneyStr = `+${fmtMoney(bn)}`; color = 'var(--green)'; }
+                 else if (bn < 0) { resultLabel = 'Thua'; moneyStr = `−${fmtMoney(-bn)}`; color = 'var(--red)'; }
+                 else { resultLabel = 'Hòa'; moneyStr = '0'; color = 'var(--muted)'; }
+              } else {
+                 const pick = m.predictions[currentMember]?.pick;
+                 let pickStr = !pick ? 'Không dự đoán' : (pick==='win' ? m.home : m.away);
+                 roleStr = `Người chơi: ${pickStr}`;
+                 
+                 const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
+                 if (mult === null) {
+                   resultLabel = '❌ Thua cả'; moneyStr = `−${fmtMoney(stake)}`; color = 'var(--red)';
+                 } else {
+                   const v = settleVerdict(mult, stake);
+                   resultLabel = v.label;
+                   moneyStr = v.amt;
+                   color = v.color;
+                 }
+              }
+
+              return `
+                <div class="profile-history-item" data-type="${itemType}" style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+                  <div>
+                    <div style="font-weight:700; margin-bottom:4px;">${m.home} vs ${m.away}</div>
+                    <div style="color:var(--text2); font-size:11px;">${m.date} | ${m.stage || 'Vòng bảng'} | ${roleStr}</div>
+                  </div>
+                  <div style="text-align:right;">
+                    <div style="font-weight:700; color:${color}; margin-bottom:2px;">${resultLabel}</div>
+                    <div style="font-weight:800; color:${color};">${moneyStr}</div>
+                  </div>
+                </div>
+              `;
+            };
+
+            let out = '';
+            const koMatches = doneMatches.filter(m => m.stage && m.stage !== 'Vòng bảng');
+            const grMatches = doneMatches.filter(m => !m.stage || m.stage === 'Vòng bảng');
+
+            if (koMatches.length > 0) {
+              out += '<div style="margin: 12px 0 8px; font-weight: 800; font-size: 11px; text-transform: uppercase; color: var(--gold); border-bottom: 1px dashed var(--border); padding-bottom: 4px;">🏆 Vòng Loại Trực Tiếp</div>';
+              out += koMatches.map(renderMatch).join('');
+            }
+            if (grMatches.length > 0) {
+              out += '<div style="margin: 16px 0 8px; font-weight: 800; font-size: 11px; text-transform: uppercase; color: var(--text2); border-bottom: 1px dashed var(--border); padding-bottom: 4px;">⚽ Vòng Bảng</div>';
+              out += grMatches.map(renderMatch).join('');
+            }
+            if(doneMatches.length===0 && !member.startBalance) {
+              out += '<div style="color:var(--text2); font-size:13px; text-align:center; padding:10px;">Chưa có dữ liệu lịch sử.</div>';
+            }
+            return out;
+          })()}
         </div>
       </div>
       
@@ -1780,6 +1825,29 @@ function normalizeMatch(m){
   return m;
 }
 
+function updateBadges() {
+  let openCount = 0;
+  let pendingCount = 0;
+  matches.forEach(m => {
+    if (!m.result) {
+      if (isEffectiveLocked(m)) {
+        pendingCount++;
+      } else {
+        openCount++;
+      }
+    }
+  });
+
+  const mc = document.getElementById('matchCountBadge');
+  if(mc) mc.textContent = openCount;
+  
+  const pc = document.getElementById('pendingCountBadge');
+  if(pc) pc.textContent = pendingCount;
+  
+  const rc = document.getElementById('rankCountBadge');
+  if(rc) rc.textContent = MEMBERS.length;
+}
+
 function refreshAllViews(){
   try{
     const active = document.querySelector('.tab-pane.active')?.id || 'tab-rank';
@@ -1788,9 +1856,8 @@ function refreshAllViews(){
     else if(active==='tab-results') renderResults();
     else if(active==='tab-members') renderMembers();
     else if(active==='tab-add') buildAddPredRows();
-    const mc=document.getElementById('matchCountBadge'); if(mc) mc.textContent=matches.filter(m=>!m.result).length;
+    updateBadges();
     const memc=document.getElementById('memberCountBadge'); if(memc) memc.textContent=MEMBERS.length;
-    const pc=document.getElementById('pendingCountBadge'); if(pc) pc.textContent=matches.filter(m=>!m.result).length;
     const sf=document.getElementById('sfooter'); if(sf) sf.textContent=`⚽ World Cup 2026 · ${MEMBERS.length} thành viên`;
   }catch(e){ console.error('[WC2026] refreshAllViews:', e); }
 }
@@ -1990,40 +2057,85 @@ function fmtNet(net){
 }
 
 // ── MEMBER STATS ──
-function getMemberStats(memberId){
-  const memberObj = MEMBERS.find(m => m.name === memberId) || {};
-  let correct=0, wrong=0, skipped=0, push=0, total=0, net=memberObj.startBalance||0, bankerCount=0, bankerNet=0;
-  matches.forEach(m=>{
-    if(!m.result) return;            // chỉ tính trận đã có KQ
-    const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
-    if(memberObj.createdAt && matchTime < memberObj.createdAt) return; // Không tính các trận diễn ra trước khi tham gia
-    const banker = m.banker || '';
-    if(!banker) return;              // trận chưa chọn nhà cái → chưa tính tiền
-    const stake = parseInt(m.bet)||0;
-    if(memberId === banker){
-      // Làm nhà cái trận này
-      const bn = bankerNetForMatch(m);
-      net += bn; bankerNet += bn; bankerCount++; total++;
-    } else {
-      // Là người chơi đối đầu nhà cái
-      total++;
-      const pick = m.predictions[memberId]?.pick;
-      const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
-      if(mult===null){ skipped++; wrong++; net -= stake; }            // không đoán → thua cả
-      else {
-        net += mult * stake;
-        if(mult > 0) correct++;       // thắng cả/nửa
-        else if(mult < 0) wrong++;    // thua cả/nửa
-        else push++;                  // hòa kèo → hoàn cược
+function calculateGlobalStats() {
+  const isGroupStageMatch = m => !m.stage || m.stage === 'Vòng bảng';
+  const isKnockoutMatch = m => m.stage && m.stage !== 'Vòng bảng';
+  const inKnockoutPhase = matches.some(isKnockoutMatch);
+
+  const calcStats = (memberId, matchFilter, includeStartBalance = false, startBonus = 0) => {
+    const memberObj = MEMBERS.find(m => m.name === memberId) || {};
+    let correct=0, wrong=0, skipped=0, push=0, total=0, net=(includeStartBalance?memberObj.startBalance||0:0) + startBonus, bankerCount=0, bankerNet=0;
+    matches.filter(matchFilter).forEach(m=>{
+      if(!m.result) return;
+      const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
+      if(memberObj.createdAt && matchTime < memberObj.createdAt) return;
+      const banker = m.banker || '';
+      if(!banker) return;
+      const stake = parseInt(m.bet)||0;
+      if(memberId === banker){
+        const bn = bankerNetForMatch(m);
+        net += bn; bankerNet += bn; bankerCount++; total++;
+      } else {
+        total++;
+        const pick = m.predictions[memberId]?.pick;
+        const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
+        if(mult===null){ skipped++; wrong++; net -= stake; }
+        else {
+          net += mult * stake;
+          if(mult > 0) correct++;
+          else if(mult < 0) wrong++;
+          else push++;
+        }
       }
+    });
+    return {correct, wrong, skipped, push, total, net, bankerCount, bankerNet};
+  };
+
+  const memberList = memberNames();
+  const groupStats = memberList.map(name => ({name, ...calcStats(name, isGroupStageMatch, true, 0)}));
+  groupStats.sort((a,b)=> b.net - a.net || b.correct - a.correct);
+  
+  const groupFund = groupStats.filter(r=>r.net<0).reduce((sum,r)=>sum+Math.abs(r.net), 0);
+
+  const knockoutBonuses = {};
+  if (groupStats.length > 0) knockoutBonuses[groupStats[0].name] = 500000;
+  if (groupStats.length > 1) knockoutBonuses[groupStats[1].name] = 300000;
+  if (groupStats.length > 2) knockoutBonuses[groupStats[2].name] = 200000;
+
+  const combinedStats = {};
+  let knockoutFund = 0;
+
+  memberList.forEach(name => {
+    if (inKnockoutPhase) {
+      const kStats = calcStats(name, isKnockoutMatch, false, knockoutBonuses[name] || 0);
+      combinedStats[name] = kStats;
+      combinedStats[name].knockoutBonus = knockoutBonuses[name] || 0;
+      if (kStats.net < 0) knockoutFund += Math.abs(kStats.net);
+    } else {
+      combinedStats[name] = groupStats.find(g => g.name === name);
     }
+    // ensure penalty and reward are present
+    combinedStats[name].penalty = combinedStats[name].net < 0 ? -combinedStats[name].net : 0;
+    combinedStats[name].reward = combinedStats[name].net > 0 ? combinedStats[name].net : 0;
   });
-  return {correct, wrong, skipped, push, total, net, bankerCount, bankerNet, penalty: net<0?-net:0, reward: net>0?net:0};
+
+  return {
+    inKnockoutPhase,
+    stats: combinedStats,
+    totalFund: inKnockoutPhase ? groupFund + knockoutFund : groupFund,
+    groupStats: groupStats
+  };
+}
+
+function getMemberStats(memberId) {
+  const globalStats = calculateGlobalStats();
+  return globalStats.stats[memberId] || {correct:0, wrong:0, skipped:0, push:0, total:0, net:0, bankerCount:0, bankerNet:0, penalty:0, reward:0};
 }
 
 // ── RENDER RANK ──
 function renderRank(){
-  const rows = memberNames().map((name,i)=>({name,idx:i,...getMemberStats(name)}));
+  const globalStats = calculateGlobalStats();
+  const rows = memberNames().map((name,i)=>({name,idx:i,...globalStats.stats[name]}));
   // Xếp hạng: số dư ròng cao → thấp; bằng nhau thì ai đúng nhiều hơn đứng trước
   rows.sort((a,b)=> b.net - a.net || b.correct - a.correct);
 
@@ -2032,7 +2144,7 @@ function renderRank(){
   const leader = rows[0];
   const loser  = rows[rows.length-1];
   const fmtSigned = v => (v>=0?'+':'−')+fmtMoney(Math.abs(v));
-  const totalFund = rows.filter(r=>r.net<0).reduce((sum,r)=>sum+Math.abs(r.net), 0);
+  const totalFund = globalStats.totalFund;
 
   // Tính toán tiến độ giải đấu
   const totalWCMatches = 104;
@@ -2063,7 +2175,7 @@ function renderRank(){
     </div></div>
 
     <div class="stat-card rank-card-tall"><div style="width:100%;height:100%;display:flex;flex-direction:column">
-      <div class="s-label" style="margin-bottom:12px;text-align:center">🏆 THÀNH TÍCH</div>
+      <div class="s-label" style="margin-bottom:12px;text-align:center">🏆 THÀNH TÍCH ${globalStats.inKnockoutPhase ? '<span style="color:var(--gold);font-size:10px">(KNOCKOUT)</span>' : ''}</div>
       <div style="display:flex;flex-direction:column;gap:8px;flex:1;justify-content:center">
         
         <div style="background:linear-gradient(135deg, #059669, #047857);padding:10px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
@@ -2082,7 +2194,7 @@ function renderRank(){
     </div></div>
 
     <div class="stat-card"><div style="width:100%;display:flex;flex-direction:column;height:100%;justify-content:center">
-      <div class="s-label" style="margin-bottom:6px">💰 TỔNG QUỸ</div>
+      <div class="s-label" style="margin-bottom:6px">💰 TỔNG QUỸ ${globalStats.inKnockoutPhase ? '<span style="font-size:10px;font-weight:normal;opacity:0.8">(Bảng + Knockout)</span>' : ''}</div>
       <div class="rc-money" style="font-family:var(--font-display);font-size:26px;font-weight:800;line-height:1;color:#fff;letter-spacing:-0.5px;margin-bottom:8px">${fmtMoney(totalFund)}</div>
       <div style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:600">👥 Tham gia: ${MEMBERS.length} TV</div>
     </div></div>
@@ -2116,8 +2228,7 @@ function renderResults(){
     : resultFilter === 'done' ? matches.filter(m=>m.result)
     : matches.filter(m=>!m.result);
 
-  const pending = matches.filter(m=>!m.result).length;
-  document.getElementById('pendingCountBadge').textContent = pending;
+  updateBadges();
 
   if(matches.length === 0){
     document.getElementById('resultsList').innerHTML='<div class="empty-state"><div class="ei">📊</div>Chưa có trận đấu nào. Hãy thêm trận trước!</div>';
@@ -2349,8 +2460,7 @@ function saveResultInline(mid){
   if(idx<0) return;
   matches[idx].result = {home:h, away:a};
   save(); renderResults(); renderRank(); renderMatches();
-  // Update pending badge
-  document.getElementById('pendingCountBadge').textContent = matches.filter(m=>!m.result).length;
+  updateBadges();
   showToast(`✅ Đã lưu kết quả! BXH đã cập nhật.`,'green');
 }
 
@@ -2361,7 +2471,7 @@ function clearResult(mid){
   if(idx<0) return;
   matches[idx].result = null;
   save(); renderResults(); renderRank(); renderMatches();
-  document.getElementById('pendingCountBadge').textContent = matches.filter(m=>!m.result).length;
+  updateBadges();
   showToast('🗑️ Đã xoá kết quả trận','orange');
 }
 
@@ -2377,7 +2487,7 @@ function renderMatches(){
   }
   if(pending.length===0){
     document.getElementById('matchList').innerHTML='<div class="empty-state"><div class="ei">🎉</div>Tất cả trận đấu đã có kết quả!<div style="font-size:13px;color:var(--muted);margin-top:8px">Xem chi tiết ở tab <b>Kết quả</b></div></div>';
-    document.getElementById('matchCountBadge').textContent = 0;
+    updateBadges();
     return;
   }
   const sorted = [...pending].reverse();
@@ -2550,7 +2660,7 @@ function renderMatches(){
     if(el) el.classList.add('is-open');
   }
 
-  document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
+  updateBadges();
 }
 
 // Toggle accordion
@@ -2640,7 +2750,7 @@ function addMatch(){
   renderRank();
   showToast(`✅ Đã thêm trận ${home} vs ${away}!`,'green');
   clearAddForm();
-  document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
+  updateBadges();
 }
 
 function onHandicapValChange(){
@@ -2874,7 +2984,7 @@ function confirmDeleteMatch(){
   save(); renderMatches(); renderRank();
   closeModal('deleteMatchModal');
   showToast('🗑️ Đã xoá trận đấu','red');
-  document.getElementById('matchCountBadge').textContent = matches.filter(m=>!m.result).length;
+  updateBadges();
 }
 
 // ── MEMBERS ──
@@ -2982,7 +3092,7 @@ function deleteMember(idx){
 }
 
 // ── TAB ──
-const tabLabels={rank:'Bảng Xếp Hạng',matches:'Danh Sách Trận',results:'Nhập Kết Quả',add:'Thêm Trận Đấu',members:'Quản Lý Thành Viên'};
+const tabLabels={rank:'Bảng Xếp Hạng',matches:'Bình chọn',results:'Nhập Kết Quả',add:'Thêm Trận Đấu',members:'Quản Lý Thành Viên'};
 function switchTab(name){
   // Guard admin-only tabs
   if((name==='add'||name==='members') && !isAdmin){
