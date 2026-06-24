@@ -1883,9 +1883,12 @@ function settleVerdict(mult, stake){
 function bankerNetForMatch(m){
   if(!m.result || !m.banker) return 0;
   const stake = parseInt(m.bet)||0;
+  const matchTime = parseInt(m.id.slice(1,14)) || 0;
   let net = 0;
   memberNames().forEach(name=>{
     if(name === m.banker) return;
+    const memberObj = MEMBERS.find(x => x.name === name) || {};
+    if(memberObj.createdAt && matchTime < memberObj.createdAt) return; // Không tính người vào sau
     const pick = m.predictions[name]?.pick;
     const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
     const playerMult = (mult===null) ? -1 : mult;   // không đoán / không hợp lệ → thua cả
@@ -1907,6 +1910,8 @@ function getMemberStats(memberId){
   let correct=0, wrong=0, skipped=0, push=0, total=0, net=memberObj.startBalance||0, bankerCount=0, bankerNet=0;
   matches.forEach(m=>{
     if(!m.result) return;            // chỉ tính trận đã có KQ
+    const matchTime = parseInt(m.id.slice(1,14)) || 0;
+    if(memberObj.createdAt && matchTime < memberObj.createdAt) return; // Không tính các trận diễn ra trước khi tham gia
     const banker = m.banker || '';
     if(!banker) return;              // trận chưa chọn nhà cái → chưa tính tiền
     const stake = parseInt(m.bet)||0;
@@ -2822,7 +2827,7 @@ function confirmAddMember(){
   const startBalance = startBalInput ? parseInt(startBalInput) * 1000 : 0;
   if(!name) return showToast('⚠️ Nhập tên!','red');
   if(memberNames().includes(name)) return showToast('⚠️ Tên đã tồn tại!','red');
-  MEMBERS.push({name, pwd, startBalance});
+  MEMBERS.push({name, pwd, startBalance, createdAt: Date.now()});
   saveMembers(); buildAddPredRows(); populateAddBanker(); renderMembers();
   closeModal('addMemberModal');
   showToast(`✅ Đã thêm ${name}!`,'green');
