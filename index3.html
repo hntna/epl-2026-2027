@@ -2757,6 +2757,15 @@ function renderMatches(){
           </div>
           <div class="mh-info">
             <span class="mh-tag mh-tag-date">${shortDate}${m.time?' '+m.time:''}</span>
+            ${(()=>{
+              const stg = m.stage || 'Vòng bảng';
+              const isKO = stg !== 'Vòng bảng';
+              const stgColor = isKO
+                ? 'background:var(--primary-dim);color:var(--primary-text)'
+                : 'background:var(--green-dim);color:var(--green)';
+              const stgIcon = isKO ? '🏆' : '⚽';
+              return `<span class="mh-tag" style="${stgColor};font-weight:700">${stgIcon} ${stg}</span>`;
+            })()}
             <span class="mh-tag mh-tag-handicap">${hcLabel}</span>
             <span class="mh-tag mh-tag-bet">${fmtMoney(m.bet)}</span>
             ${statusTag}
