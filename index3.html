@@ -2305,7 +2305,11 @@ function renderRank(){
       ['2026-07-18',1],['2026-07-19',1],
     ];
     const totalWCMatches = 104;
-    const todayStr = new Date().toISOString().slice(0,10);
+    // Dùng local date để tránh lệch múi giờ (UTC+7)
+    const _d = new Date();
+    const todayStr = _d.getFullYear() + '-' +
+      String(_d.getMonth()+1).padStart(2,'0') + '-' +
+      String(_d.getDate()).padStart(2,'0');
     const actualDoneBySchedule = WC2026_SCHEDULE
       .filter(([d]) => d <= todayStr)
       .reduce((sum,[,n]) => sum + n, 0);
