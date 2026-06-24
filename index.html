@@ -1291,7 +1291,7 @@ const FIREBASE_CONFIG = {
 <script>
 // ── ADMIN SYSTEM ──
 let ADMIN_PWD_HASH = 'admin123'; // đổi mật khẩu tại đây
-const SK_ADMIN = 'wc2026_admin';
+const SK_ADMIN = 'wc2026_v2_admin';
 let isAdmin = false;
 
 function checkAdminSession(){
@@ -1389,7 +1389,7 @@ function requireAdmin(action){
 }
 
 // ── MEMBER ACCOUNT SYSTEM ──
-const SK_MEMBER_ID = 'wc2026_member_id';
+const SK_MEMBER_ID = 'wc2026_v2_member_id';
 let currentMember = null;
 
 function checkMemberSession(){
@@ -1732,8 +1732,8 @@ const CONF = {
   'Bosnia & Herzegovina':'🌍 UEFA','CH Séc':'🌍 UEFA'
 };
 
-const SK_MEMBERS = 'wc2026_members';
-const SK_MATCHES = 'wc2026_matches';
+const SK_MEMBERS = 'wc2026_v2_members';
+const SK_MATCHES = 'wc2026_v2_matches';
 
 // ── DATA ──
 let MEMBERS = [];
@@ -1808,7 +1808,7 @@ function initCloud(){
     showSyncBanner(true);
 
     // Realtime: MATCHES
-    db.ref('wc2026/matches').on('value', snap=>{
+    db.ref('wc2026_v2/matches').on('value', snap=>{
       const val = snap.val();
       if(val!==null){
         const arr = Array.isArray(val) ? val : Object.values(val);
@@ -1823,11 +1823,11 @@ function initCloud(){
     });
 
     // Realtime: MEMBERS
-    db.ref('wc2026/adminPwd').on('value', snap=>{
+    db.ref('wc2026_v2/adminPwd').on('value', snap=>{
         if(snap.val()!==null){ ADMIN_PWD_HASH = snap.val(); }
         else if(isAdmin){ pushAdminPwd(); }
       });
-      db.ref('wc2026/members').on('value', snap=>{
+      db.ref('wc2026_v2/members').on('value', snap=>{
       const val = snap.val();
       if(val!==null){
         const arr = Array.isArray(val) ? val : Object.values(val);
@@ -1849,10 +1849,10 @@ function initCloud(){
 }
 
 function pushMatches(){
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('wc2026_v2/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
 }
 function pushMembers(){
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026/members').set(MEMBERS).catch(e=>console.error('[WC2026] push members:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('wc2026_v2/members').set(MEMBERS).catch(e=>console.error('[WC2026] push members:',e)); }
 }
 
 function showSyncBanner(connected){ return; // Disabled by request
@@ -3027,7 +3027,7 @@ function toggleTheme(){
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
   document.querySelector('.theme-btn').textContent = isDark ? '☀️' : '🌙';
-  localStorage.setItem('wc2026_theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('wc2026_v2_theme', isDark ? 'dark' : 'light');
 }
 
 // ── RESPONSIVE ──
@@ -3043,7 +3043,7 @@ load();
 checkAdminSession();
 checkMemberSession();
 initCloud();   // bật đồng bộ cloud (nếu đã cấu hình Firebase)
-if(localStorage.getItem('wc2026_theme')==='dark'){document.body.classList.add('dark-mode');document.querySelector('.theme-btn').textContent='☀️';}
+if(localStorage.getItem('wc2026_v2_theme')==='dark'){document.body.classList.add('dark-mode');document.querySelector('.theme-btn').textContent='☀️';}
 document.getElementById('matchDate').value=new Date().toISOString().slice(0,10);
 initTeamSelects();
 buildAddPredRows();
