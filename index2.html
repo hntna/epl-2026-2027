@@ -873,6 +873,7 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <div class="section-header">
         <div class="section-title"><span class="section-icon">🏆</span> Bảng Xếp Hạng</div>
       </div>
+      <div id="rankTabsContainer"></div>
       <div class="table-wrap">
         <table>
           <thead><tr>
@@ -933,6 +934,8 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
             <label>Giai Đoạn</label>
             <select id="matchStage">
               <option>Vòng bảng</option>
+              <option>Vòng 1/32</option>
+              <option>Vòng 1/16</option>
               <option>Vòng 1/8</option>
               <option>Tứ kết</option>
               <option>Bán kết</option>
@@ -1080,6 +1083,8 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <label>🏟️ Vòng Đấu</label>
       <select id="editInfoStage" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:10px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;outline:none;width:100%">
         <option>Vòng bảng</option>
+        <option>Vòng 1/32</option>
+        <option>Vòng 1/16</option>
         <option>Vòng 1/8</option>
         <option>Tứ kết</option>
         <option>Bán kết</option>
@@ -2103,14 +2108,20 @@ function calculateGlobalStats() {
   if (groupStats.length > 2) knockoutBonuses[groupStats[2].name] = 200000;
 
   const combinedStats = {};
-  let knockoutFund = 0;
+  const knockoutStats = memberList.map(name => {
+    const kStats = calcStats(name, isKnockoutMatch, false, knockoutBonuses[name] || 0);
+    kStats.name = name;
+    kStats.knockoutBonus = knockoutBonuses[name] || 0;
+    kStats.penalty = kStats.net < 0 ? -kStats.net : 0;
+    kStats.reward = kStats.net > 0 ? kStats.net : 0;
+    return kStats;
+  });
+  
+  const knockoutFund = knockoutStats.filter(r=>r.net<0).reduce((sum,r)=>sum+Math.abs(r.net), 0);
 
   memberList.forEach(name => {
     if (inKnockoutPhase) {
-      const kStats = calcStats(name, isKnockoutMatch, false, knockoutBonuses[name] || 0);
-      combinedStats[name] = kStats;
-      combinedStats[name].knockoutBonus = knockoutBonuses[name] || 0;
-      if (kStats.net < 0) knockoutFund += Math.abs(kStats.net);
+      combinedStats[name] = knockoutStats.find(k => k.name === name);
     } else {
       combinedStats[name] = groupStats.find(g => g.name === name);
     }
@@ -2123,7 +2134,10 @@ function calculateGlobalStats() {
     inKnockoutPhase,
     stats: combinedStats,
     totalFund: inKnockoutPhase ? groupFund + knockoutFund : groupFund,
-    groupStats: groupStats
+    groupFund,
+    knockoutFund,
+    groupStats: groupStats,
+    knockoutStats: knockoutStats
   };
 }
 
@@ -2133,11 +2147,44 @@ function getMemberStats(memberId) {
 }
 
 // ── RENDER RANK ──
+window.setRankTab = function(tab) {
+  window.activeRankTab = tab;
+  renderRank();
+}
 function renderRank(){
   const globalStats = calculateGlobalStats();
-  const rows = memberNames().map((name,i)=>({name,idx:i,...globalStats.stats[name]}));
-  // Xếp hạng: số dư ròng cao → thấp; bằng nhau thì ai đúng nhiều hơn đứng trước
-  rows.sort((a,b)=> b.net - a.net || b.correct - a.correct);
+  
+  let activeRankTab = window.activeRankTab;
+  if (!activeRankTab) {
+    activeRankTab = globalStats.inKnockoutPhase ? 'knockout' : 'group';
+    window.activeRankTab = activeRankTab;
+  }
+  
+  let rows = [];
+  if (activeRankTab === 'group') {
+    rows = [...globalStats.groupStats];
+  } else {
+    rows = [...globalStats.knockoutStats];
+    const knockoutStarted = matches.some(m => m.result && m.stage && m.stage !== 'Vòng bảng');
+    if (!knockoutStarted) {
+      rows.sort((a,b) => {
+        const idxA = globalStats.groupStats.findIndex(g => g.name === a.name);
+        const idxB = globalStats.groupStats.findIndex(g => g.name === b.name);
+        return idxA - idxB;
+      });
+    } else {
+      rows.sort((a,b) => b.net - a.net || b.correct - a.correct);
+    }
+  }
+
+  const rankTabsHTML = `
+    <div class="filter-tabs" style="margin-bottom:16px;">
+      <button class="filter-tab ${activeRankTab==='group'?'active':''}" onclick="setRankTab('group')">⚽ Vòng Bảng</button>
+      <button class="filter-tab ${activeRankTab==='knockout'?'active':''}" onclick="setRankTab('knockout')">🏆 Vòng Loại Trực Tiếp</button>
+    </div>
+  `;
+  const tabsContainer = document.getElementById('rankTabsContainer');
+  if (tabsContainer) tabsContainer.innerHTML = rankTabsHTML;
 
   const totalMatches = matches.length;
   const doneMatches = matches.filter(m=>m.result).length;
@@ -2145,6 +2192,73 @@ function renderRank(){
   const loser  = rows[rows.length-1];
   const fmtSigned = v => (v>=0?'+':'−')+fmtMoney(Math.abs(v));
   const totalFund = globalStats.totalFund;
+
+  let leaderHTML = '';
+  if (globalStats.inKnockoutPhase) {
+    const gSorted = [...globalStats.groupStats].sort((a,b)=>b.net-a.net);
+    const gLeader = gSorted[0];
+    const gLoser  = gSorted[gSorted.length-1];
+    
+    const kSorted = [...globalStats.knockoutStats].sort((a,b)=>b.net-a.net);
+    const kLeader = kSorted[0];
+    const kLoser  = kSorted[kSorted.length-1];
+
+    leaderHTML = `
+      <div class="s-label" style="margin-bottom:8px;text-align:center">🏆 THÀNH TÍCH</div>
+      <div style="font-size:11px; color:rgba(255,255,255,0.8); text-align:center; margin-bottom:4px; font-weight:700">VÒNG BẢNG</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:8px">
+        <div style="background:linear-gradient(135deg, #059669, #047857);padding:8px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
+          <div style="font-size:9px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:2px;">Tốt nhất</div>
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${gLeader?gLeader.name:'—'}</div>
+          <div class="rc-money" style="font-size:13px;font-weight:800;color:#fff;">${gLeader?fmtSigned(gLeader.net):'—'}</div>
+        </div>
+        <div style="background:linear-gradient(135deg, #059669, #047857);padding:8px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
+          <div style="font-size:9px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:2px;">Xa bờ nhất</div>
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${gLoser?gLoser.name:'—'}</div>
+          <div class="rc-money" style="font-size:13px;font-weight:800;color:#fff;">${gLoser?fmtSigned(gLoser.net):'—'}</div>
+        </div>
+      </div>
+      <div style="font-size:11px; color:var(--gold); text-align:center; margin-bottom:4px; font-weight:700">KNOCKOUT</div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+        <div style="background:linear-gradient(135deg, #b45309, #92400e);padding:8px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
+          <div style="font-size:9px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:2px;">Tốt nhất</div>
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${kLeader?kLeader.name:'—'}</div>
+          <div class="rc-money" style="font-size:13px;font-weight:800;color:#fff;">${kLeader?fmtSigned(kLeader.net):'—'}</div>
+        </div>
+        <div style="background:linear-gradient(135deg, #b45309, #92400e);padding:8px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
+          <div style="font-size:9px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:2px;">Xa bờ nhất</div>
+          <div style="font-size:13px;font-weight:800;color:#fff;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${kLoser?kLoser.name:'—'}</div>
+          <div class="rc-money" style="font-size:13px;font-weight:800;color:#fff;">${kLoser?fmtSigned(kLoser.net):'—'}</div>
+        </div>
+      </div>
+    `;
+  } else {
+    leaderHTML = `
+      <div class="s-label" style="margin-bottom:12px;text-align:center">🏆 THÀNH TÍCH</div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;justify-content:center">
+        <div style="background:linear-gradient(135deg, #059669, #047857);padding:10px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
+          <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:4px;text-shadow:0 1px 2px rgba(0,0,0,0.1)">Tốt nhất</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${leader?leader.name:'—'}</div>
+          <div class="rc-money" style="font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${leader?fmtSigned(leader.net):'—'}</div>
+        </div>
+        <div style="background:linear-gradient(135deg, #059669, #047857);padding:10px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
+          <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:4px;text-shadow:0 1px 2px rgba(0,0,0,0.1)">Xa bờ nhất</div>
+          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${loser?loser.name:'—'}</div>
+          <div class="rc-money" style="font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${loser?fmtSigned(loser.net):'—'}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  const fundHTML = `
+      <div class="s-label" style="margin-bottom:6px">💰 TỔNG QUỸ ${globalStats.inKnockoutPhase ? '<span style="font-size:10px;font-weight:normal;opacity:0.8">(Gộp)</span>' : ''}</div>
+      <div class="rc-money" style="font-family:var(--font-display);font-size:26px;font-weight:800;line-height:1;color:#fff;letter-spacing:-0.5px;margin-bottom:8px">${fmtMoney(totalFund)}</div>
+      ${globalStats.inKnockoutPhase ? `
+      <div style="font-size:12px;color:rgba(255,255,255,0.9);font-weight:600;margin-bottom:2px">Bảng: ${fmtMoney(globalStats.groupFund)}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.9);font-weight:600;margin-bottom:6px">Knockout: ${fmtMoney(globalStats.knockoutFund)}</div>
+      ` : ''}
+      <div style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:600">👥 Tham gia: ${MEMBERS.length} TV</div>
+  `;
 
   // Tính toán tiến độ giải đấu
   const totalWCMatches = 104;
@@ -2175,28 +2289,11 @@ function renderRank(){
     </div></div>
 
     <div class="stat-card rank-card-tall"><div style="width:100%;height:100%;display:flex;flex-direction:column">
-      <div class="s-label" style="margin-bottom:12px;text-align:center">🏆 THÀNH TÍCH ${globalStats.inKnockoutPhase ? '<span style="color:var(--gold);font-size:10px">(KNOCKOUT)</span>' : ''}</div>
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;justify-content:center">
-        
-        <div style="background:linear-gradient(135deg, #059669, #047857);padding:10px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
-          <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:4px;text-shadow:0 1px 2px rgba(0,0,0,0.1)">Tốt nhất</div>
-          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${leader?leader.name:'—'}</div>
-          <div class="rc-money" style="font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${leader?fmtSigned(leader.net):'—'}</div>
-        </div>
-        
-        <div style="background:linear-gradient(135deg, #059669, #047857);padding:10px;border-radius:10px;text-align:center;box-shadow:0 4px 10px rgba(0,0,0,0.15)">
-          <div style="font-size:10px;text-transform:uppercase;color:rgba(255,255,255,0.95);font-weight:800;margin-bottom:4px;text-shadow:0 1px 2px rgba(0,0,0,0.1)">Xa bờ nhất</div>
-          <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${loser?loser.name:'—'}</div>
-          <div class="rc-money" style="font-size:15px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,0.1)">${loser?fmtSigned(loser.net):'—'}</div>
-        </div>
-
-      </div>
+      ${leaderHTML}
     </div></div>
 
     <div class="stat-card"><div style="width:100%;display:flex;flex-direction:column;height:100%;justify-content:center">
-      <div class="s-label" style="margin-bottom:6px">💰 TỔNG QUỸ ${globalStats.inKnockoutPhase ? '<span style="font-size:10px;font-weight:normal;opacity:0.8">(Bảng + Knockout)</span>' : ''}</div>
-      <div class="rc-money" style="font-family:var(--font-display);font-size:26px;font-weight:800;line-height:1;color:#fff;letter-spacing:-0.5px;margin-bottom:8px">${fmtMoney(totalFund)}</div>
-      <div style="font-size:11px;color:rgba(255,255,255,0.9);font-weight:600">👥 Tham gia: ${MEMBERS.length} TV</div>
+      ${fundHTML}
     </div></div>
   `;
 
