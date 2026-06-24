@@ -2266,9 +2266,28 @@ function renderRank(){
       </div>
     `;
 
-    // Tính toán tiến độ giải đấu
+    // Tính toán tiến độ giải đấu theo lịch thực tế WC 2026
+    // Mỗi entry: [ngày, số trận trong ngày đó]
+    const WC2026_SCHEDULE = [
+      ['2026-06-11',1],['2026-06-12',4],['2026-06-13',5],['2026-06-14',4],
+      ['2026-06-15',4],['2026-06-16',4],['2026-06-17',5],['2026-06-18',4],
+      ['2026-06-19',4],['2026-06-20',4],['2026-06-21',4],['2026-06-22',4],
+      ['2026-06-23',4],['2026-06-24',4],['2026-06-25',8],['2026-06-26',8],
+      ['2026-06-27',8],
+      ['2026-06-28',3],['2026-06-29',3],['2026-06-30',3],
+      ['2026-07-01',3],['2026-07-02',2],['2026-07-03',2],
+      ['2026-07-04',2],['2026-07-05',2],['2026-07-06',2],['2026-07-07',2],
+      ['2026-07-09',2],['2026-07-10',1],['2026-07-11',1],
+      ['2026-07-14',1],['2026-07-15',1],
+      ['2026-07-18',1],['2026-07-19',1],
+    ];
     const totalWCMatches = 104;
-    const progressPct = Math.min(100, Math.round((doneMatches / totalWCMatches) * 100));
+    const todayStr = new Date().toISOString().slice(0,10);
+    const actualDoneBySchedule = WC2026_SCHEDULE
+      .filter(([d]) => d <= todayStr)
+      .reduce((sum,[,n]) => sum + n, 0);
+    const actualDone = Math.max(actualDoneBySchedule, doneMatches);
+    const progressPct = Math.min(100, Math.round((actualDone / totalWCMatches) * 100));
 
     const currentThemeIcon = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
     document.getElementById('rankStats').innerHTML=`
@@ -2285,7 +2304,7 @@ function renderRank(){
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-size:12px; font-weight:800; color:var(--text);">
           <span style="display:flex;align-items:center;gap:4px">⏱️ TIẾN ĐỘ GIẢI ĐẤU</span>
           <span style="display:flex;align-items:center;gap:12px">
-            <span style="color:var(--blue);">${progressPct}% (${doneMatches}/${totalWCMatches} trận)</span>
+            <span style="color:var(--blue);">${progressPct}% (${actualDone}/${totalWCMatches} trận)</span>
             <button class="theme-btn" onclick="toggleTheme()" title="Đổi giao diện" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0;display:flex;align-items:center;">${currentThemeIcon}</button>
           </span>
         </div>
