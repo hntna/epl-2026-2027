@@ -1451,6 +1451,70 @@ function renderProfile() {
         </div>
       </div>
       
+      <!-- Lịch sử dự đoán -->
+      <div style="margin-bottom: 24px;">
+        <div style="font-size:14px; font-weight:800; margin-bottom:12px;">🕒 Lịch sử dự đoán</div>
+        <div style="max-height: 400px; overflow-y: auto; padding-right: 4px;">
+          ${(member.startBalance) ? `
+            <div style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <div style="font-weight:700; margin-bottom:4px;">💳 Số dư ban đầu</div>
+                <div style="color:var(--text2); font-size:11px;">Lúc tham gia giải</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="font-weight:800; color:${member.startBalance>0?'var(--green)':'var(--red)'};">${member.startBalance>0?'+':'−'}${fmtMoney(Math.abs(member.startBalance))}</div>
+              </div>
+            </div>
+          ` : ''}
+          ${[...matches].filter(m=>m.result).reverse().map(m => {
+            const matchTime = new Date(`${m.date}T${m.time}:00`).getTime() || 0;
+            if(member.createdAt && matchTime < member.createdAt) return '';
+            
+            const stake = parseInt(m.bet) || 0;
+            let roleStr = '';
+            let resultLabel = '';
+            let moneyStr = '';
+            let color = 'var(--text)';
+
+            if (m.banker === currentMember) {
+               const bn = bankerNetForMatch(m);
+               roleStr = 'Nhà cái';
+               if (bn > 0) { resultLabel = 'Thắng'; moneyStr = `+${fmtMoney(bn)}`; color = 'var(--green)'; }
+               else if (bn < 0) { resultLabel = 'Thua'; moneyStr = `−${fmtMoney(-bn)}`; color = 'var(--red)'; }
+               else { resultLabel = 'Hòa'; moneyStr = '0'; color = 'var(--muted)'; }
+            } else {
+               const pick = m.predictions[currentMember]?.pick;
+               let pickStr = !pick ? 'Không dự đoán' : (pick==='win' ? m.home : m.away);
+               roleStr = `Người chơi: ${pickStr}`;
+               
+               const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
+               if (mult === null) {
+                 resultLabel = '❌ Thua cả'; moneyStr = `−${fmtMoney(stake)}`; color = 'var(--red)';
+               } else {
+                 const v = settleVerdict(mult, stake);
+                 resultLabel = v.label;
+                 moneyStr = v.amt;
+                 color = v.color;
+               }
+            }
+
+            return `
+              <div style="background:var(--surface2); padding:10px; border-radius:8px; margin-bottom:8px; font-size:13px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                  <div style="font-weight:700; margin-bottom:4px;">${m.home} vs ${m.away}</div>
+                  <div style="color:var(--text2); font-size:11px;">${m.date} | ${roleStr}</div>
+                </div>
+                <div style="text-align:right;">
+                  <div style="font-weight:700; color:${color}; margin-bottom:2px;">${resultLabel}</div>
+                  <div style="font-weight:800; color:${color};">${moneyStr}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+          ${[...matches].filter(m=>m.result).length===0 && !member.startBalance ? '<div style="color:var(--text2); font-size:13px; text-align:center; padding:10px;">Chưa có dữ liệu lịch sử.</div>' : ''}
+        </div>
+      </div>
+      
       <div style="display:flex; flex-direction:column; gap:12px;">
         <button class="btn" style="background:var(--surface2); border:1px solid var(--border); color:var(--text); padding:12px; font-weight:700;" onclick="openChangePwdModal()">🔑 Đổi mật khẩu</button>
         <button class="btn" style="background:var(--red-dim); color:var(--red); border:1px solid rgba(244,114,182,.2); padding:12px; font-weight:700;" onclick="memberLogout()">Đăng xuất</button>
