@@ -1155,6 +1155,10 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
       <label>Mật khẩu <span style="color:var(--muted);font-weight:400">(tuỳ chọn)</span></label>
       <input type="password" id="newMemberPwd" placeholder="Để trống = không cần mật khẩu" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;outline:none;width:100%;transition:border-color .2s"/>
     </div>
+    <div class="form-group" style="margin-bottom:13px">
+      <label>Số dư ban đầu <span style="color:var(--muted);font-weight:400">(nhập -500 nếu muốn phạt)</span></label>
+      <input type="number" id="newMemberStartBalance" value="-500" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;outline:none;width:100%;transition:border-color .2s"/>
+    </div>
     <div class="modal-btns">
       <button class="btn-full btn-cancel" onclick="closeModal('addMemberModal')">Huỷ</button>
       <button class="btn-full btn-confirm" onclick="confirmAddMember()">➕ Thêm</button>
@@ -1175,6 +1179,10 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     <div class="form-group" style="margin-bottom:13px">
       <label>Mật khẩu <span style="color:var(--muted);font-weight:400">(để trống = xoá mật khẩu)</span></label>
       <input type="password" id="editMemberPwd" placeholder="Nhập mật khẩu mới hoặc để trống" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;outline:none;width:100%;transition:border-color .2s"/>
+    </div>
+    <div class="form-group" style="margin-bottom:13px">
+      <label>Số dư ban đầu <span style="color:var(--muted);font-weight:400">(đơn vị: nghìn, ví dụ: -500)</span></label>
+      <input type="number" id="editMemberStartBalance" value="0" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:500;outline:none;width:100%;transition:border-color .2s"/>
     </div>
     <div class="modal-btns">
       <button class="btn-full btn-cancel" onclick="closeModal('editMemberModal')">Huỷ</button>
@@ -1895,7 +1903,8 @@ function fmtNet(net){
 
 // ── MEMBER STATS ──
 function getMemberStats(memberId){
-  let correct=0, wrong=0, skipped=0, push=0, total=0, net=0, bankerCount=0, bankerNet=0;
+  const memberObj = MEMBERS.find(m => m.name === memberId) || {};
+  let correct=0, wrong=0, skipped=0, push=0, total=0, net=memberObj.startBalance||0, bankerCount=0, bankerNet=0;
   matches.forEach(m=>{
     if(!m.result) return;            // chỉ tính trận đã có KQ
     const banker = m.banker || '';
@@ -2801,6 +2810,7 @@ function openAddMemberModal(){
   if(!isAdmin) return requireAdmin(()=>openAddMemberModal());
   document.getElementById('newMemberName').value='';
   document.getElementById('newMemberPwd').value='';
+  document.getElementById('newMemberStartBalance').value='-500';
   openModal('addMemberModal');
   setTimeout(()=>document.getElementById('newMemberName').focus(),100);
 }
@@ -2808,9 +2818,11 @@ function confirmAddMember(){
   if(!isAdmin) return;
   const name = document.getElementById('newMemberName').value.trim();
   const pwd  = document.getElementById('newMemberPwd').value;
+  const startBalInput = document.getElementById('newMemberStartBalance').value;
+  const startBalance = startBalInput ? parseInt(startBalInput) * 1000 : 0;
   if(!name) return showToast('⚠️ Nhập tên!','red');
   if(memberNames().includes(name)) return showToast('⚠️ Tên đã tồn tại!','red');
-  MEMBERS.push({name, pwd});
+  MEMBERS.push({name, pwd, startBalance});
   saveMembers(); buildAddPredRows(); populateAddBanker(); renderMembers();
   closeModal('addMemberModal');
   showToast(`✅ Đã thêm ${name}!`,'green');
@@ -2821,6 +2833,7 @@ function openEditMemberModal(idx){
   document.getElementById('editMemberSub').textContent=`Đang sửa: ${MEMBERS[idx].name}`;
   document.getElementById('editMemberName').value=MEMBERS[idx].name;
   document.getElementById('editMemberPwd').value=MEMBERS[idx].pwd||'';
+  document.getElementById('editMemberStartBalance').value=(MEMBERS[idx].startBalance||0)/1000;
   openModal('editMemberModal');
   setTimeout(()=>document.getElementById('editMemberName').focus(),100);
 }
@@ -2830,6 +2843,8 @@ function confirmEditMember(){
   const oldName=MEMBERS[idx].name;
   const newName=document.getElementById('editMemberName').value.trim();
   const newPwd=document.getElementById('editMemberPwd').value;
+  const startBalInput = document.getElementById('editMemberStartBalance').value;
+  const startBalance = startBalInput ? parseInt(startBalInput) * 1000 : 0;
   if(!newName) return showToast('⚠️ Tên không được trống!','red');
   if(newName!==oldName && memberNames().includes(newName)) return showToast('⚠️ Tên đã tồn tại!','red');
   if(newName!==oldName){
@@ -2840,7 +2855,7 @@ function confirmEditMember(){
     // Cập nhật currentMember nếu đang đăng nhập
     if(currentMember===oldName){ currentMember=newName; try{sessionStorage.setItem(SK_MEMBER_ID,newName);}catch(e){} }
   }
-  MEMBERS[idx]={name:newName, pwd:newPwd};
+  MEMBERS[idx]={name:newName, pwd:newPwd, startBalance};
   saveMembers(); save(); buildAddPredRows(); populateAddBanker(); renderMembers(); renderRank();
   closeModal('editMemberModal');
   showToast(`✅ Đã cập nhật thành viên!`,'green');
