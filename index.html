@@ -2769,6 +2769,13 @@ function renderMatches(){
             <span class="mh-tag mh-tag-handicap">${hcLabel}</span>
             <span class="mh-tag mh-tag-bet">${fmtMoney(m.bet)}</span>
             ${statusTag}
+            ${(()=>{
+              if(isAdmin || !currentMember || currentMember === (m.banker||'')) return '';
+              const myPick = m.predictions[currentMember]?.pick;
+              if(myPick) return `<span class="mh-tag" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(16,185,129,.2)">✓ Đã chọn</span>`;
+              if(locked) return `<span class="mh-tag" style="background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.2)">❌ Bỏ lỡ</span>`;
+              return `<span class="mh-tag" style="background:var(--orange-dim);color:var(--orange);border:1px solid rgba(245,158,11,.2)">⚠️ Chưa chọn</span>`;
+            })()}
           </div>
         </div>
         <div class="mh-right">
