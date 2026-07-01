@@ -813,19 +813,15 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
     background: linear-gradient(to right, var(--bg-elevated), rgba(245, 158, 11, 0.05)) !important;
   }
   .btn-star {
-    background: transparent; border: 1px solid transparent; cursor: pointer; font-size: 18px; padding: 4px;
-    border-radius: 50%; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s, background 0.2s; margin-left: 4px;
+    background: transparent; border: 1px solid var(--border); cursor: pointer; font-size: 10px; font-weight: 800; padding: 2px 6px;
+    border-radius: 12px; display: flex; align-items: center; justify-content: center;
+    transition: transform 0.2s, background 0.2s; margin-left: 2px; color: var(--muted);
   }
-  .btn-star:hover { transform: scale(1.1); background: var(--surface2); }
-  .btn-star.active { text-shadow: 0 0 10px var(--gold); background: var(--gold-dim); border-color: rgba(245, 158, 11, 0.3); }
+  .btn-star:hover:not(:disabled) { transform: scale(1.05); background: var(--surface2); color: var(--text); }
+  .btn-star.active { color: var(--gold); background: var(--gold-dim); border-color: rgba(245, 158, 11, 0.5); text-shadow: none; box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2); }
+  .btn-star:disabled { opacity: 0.3; cursor: not-allowed; }
   .star-tag {
-    font-size: 14px; margin-left: 4px; display: inline-block; animation: pulseStar 1.5s infinite;
-  }
-  @keyframes pulseStar {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+    font-size: 11px; font-weight: 800; color: var(--gold); background: var(--gold-dim); padding: 2px 6px; border-radius: 12px; margin-left: 4px; display: inline-block; border: 1px solid rgba(245,158,11,0.3);
   }
 </style>
 </head>
@@ -2064,10 +2060,10 @@ function bankerNetForMatch(m){
     if(memberObj.createdAt && matchTime < memberObj.createdAt) return; // Không tính người vào sau
     const p = m.predictions[name];
     const pick = p?.pick;
-    const isStar = !!p?.isStar;
+    const starMult = p?.starMult || 1;
     const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
     let playerMult = (mult===null) ? -1 : mult;   // không đoán / không hợp lệ → thua cả
-    if(isStar) playerMult *= 3;
+    playerMult *= starMult;
     net += -(playerMult) * stake;                    // nhà cái ngược dấu với người chơi
   });
   return net;
@@ -2103,12 +2099,12 @@ function calculateGlobalStats() {
         total++;
         const p = m.predictions[memberId];
         const pick = p?.pick;
-        const isStar = !!p?.isStar;
+        const starMult = p?.starMult || 1;
         const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
         let finalMult = (mult===null) ? -1 : mult;
-        if(isStar) finalMult *= 3;
+        finalMult *= starMult;
 
-        if(mult===null){ skipped++; wrong++; net -= stake * (isStar?3:1); }
+        if(mult===null){ skipped++; wrong++; net -= stake * starMult; }
         else {
           net += finalMult * stake;
           if(mult > 0) correct++;
@@ -2432,7 +2428,7 @@ function renderResults(){
     }
     let hasAnyStar = false;
     if(m.predictions) {
-      Object.values(m.predictions).forEach(p => { if(p.isStar) hasAnyStar = true; });
+      Object.values(m.predictions).forEach(p => { if(p.starMult) hasAnyStar = true; });
     }
     const scoreDisplay = done ? `${m.result.home} – ${m.result.away}` : 'vs';
 
@@ -2463,7 +2459,7 @@ function renderResults(){
       const isBanker = (name === banker);
       const p = m.predictions[name];
       const pick = p?.pick;
-      const isStar = !!p?.isStar;
+      const starMult = p?.starMult;
       const canSeeAll = isAdmin || currentMember === (m.banker||'') || done;
       const showVote = canSeeAll || name === currentMember;
       
@@ -2477,7 +2473,7 @@ function renderResults(){
       
       let verdictHtml = '';
       let rowClass = '';
-      const starHtml = isStar ? `<span class="star-tag" title="Ngôi sao hy vọng (x3)">🌟</span>` : '';
+      const starHtml = starMult ? `<span class="star-tag" title="Ngôi sao hy vọng (${starMult}x)">🌟 ${starMult}x</span>` : '';
 
       if(isBanker){
         let amt = '';
@@ -2496,7 +2492,7 @@ function renderResults(){
 
       if(done && banker){
         const mult = settlePick(pick, m.result, m.handicapVal, m.handicapFavor);
-        const actualStake = stake * (isStar ? 3 : 1);
+        const actualStake = stake * (starMult || 1);
         if(mult===null){
           verdictHtml = `<span class="mrr-verdict mrr-verdict-wrong">⚠️ Không đoán</span><span class="mrr-penalty">−${fmtMoney(actualStake)}</span>`;
           rowClass = 'mrr-wrong';
@@ -2699,7 +2695,7 @@ function renderMatches(){
     
     let hasAnyStar = false;
     if(m.predictions) {
-      Object.values(m.predictions).forEach(p => { if(p.isStar) hasAnyStar = true; });
+      Object.values(m.predictions).forEach(p => { if(p.starMult) hasAnyStar = true; });
     }
     
     const hcLabel = parseFloat(m.handicapVal)===0 ? 'Chấp bằng' : (m.handicapFavor==='away'?m.away:m.home)+' nhận '+m.handicapVal;
@@ -2737,7 +2733,7 @@ function renderMatches(){
       const pred = m.predictions[name];
       const pick = pred?.pick;
       const confirmed = !!pred?.confirmed;
-      const isStar = !!pred?.isStar;
+      const starMult = pred?.starMult;
       const wSel = pick==='win'?' sel-win':'';
       const lSel = pick==='loss'?' sel-loss':'';
       const isMe = (!isAdmin && name === currentMember);
@@ -2754,9 +2750,17 @@ function renderMatches(){
       
       let starHtml = '';
       if(isMe && !readOnlyMatch && !confirmed) {
-        starHtml = `<button class="btn-star${isStar?' active':''}" onclick="toggleMatchStar('${m.id}','${safeN}')" title="Ngôi sao hy vọng (x3)">${isStar?'🌟':'☆'}</button>`;
-      } else if (isStar) {
-        starHtml = `<span class="star-tag" title="Ngôi sao hy vọng (x3)">🌟</span>`;
+        const used = getUsedStars(name);
+        starHtml = `<div style="display:inline-flex;gap:2px;margin-left:4px">`;
+        [1.5, 2, 3].forEach(mVal => {
+          const isActive = (starMult === mVal);
+          const isUsedOther = (used[mVal] && used[mVal] !== m.id);
+          const btnClass = 'btn-star' + (isActive ? ' active' : '') + (isUsedOther ? ' used-other' : '');
+          starHtml += `<button class="${btnClass}" ${isUsedOther?'disabled':''} onclick="setMatchStar('${m.id}','${safeN}',${mVal})" title="Ngôi sao ${mVal}x">${mVal}x</button>`;
+        });
+        starHtml += `</div>`;
+      } else if (starMult) {
+        starHtml = `<span class="star-tag" title="Ngôi sao hy vọng (${starMult}x)">🌟 ${starMult}x</span>`;
       }
 
       let confirmCtrl = '';
@@ -3085,7 +3089,7 @@ function setMatchPred(matchId, name, pick){
   }
   // Toggle: click lại cùng lựa chọn thì bỏ chọn
   if(m.predictions[name]?.pick === pick){
-    if(m.predictions[name].isStar) {
+    if(m.predictions[name].starMult) {
       m.predictions[name].pick = null;
     } else {
       delete m.predictions[name];
@@ -3094,7 +3098,7 @@ function setMatchPred(matchId, name, pick){
     m.predictions[name] = {
       pick, 
       confirmed: m.predictions[name]?.confirmed || false,
-      isStar: m.predictions[name]?.isStar || false
+      starMult: m.predictions[name]?.starMult || null
     };
   }
   save();
@@ -3102,17 +3106,17 @@ function setMatchPred(matchId, name, pick){
 }
 
 // ── NGÔI SAO HY VỌNG ──
-function countUsedStars(memberName) {
-  let count = 0;
+function getUsedStars(memberName) {
+  const used = {};
   matches.forEach(m => {
-    if(m.predictions && m.predictions[memberName] && m.predictions[memberName].isStar) {
-      count++;
+    if(m.predictions && m.predictions[memberName] && m.predictions[memberName].starMult) {
+      used[m.predictions[memberName].starMult] = m.id;
     }
   });
-  return count;
+  return used;
 }
 
-window.toggleMatchStar = function(matchId, name) {
+window.setMatchStar = function(matchId, name, mult) {
   const idx = matches.findIndex(x=>x.id===matchId);
   if(idx<0) return;
   const m = matches[idx];
@@ -3130,16 +3134,17 @@ window.toggleMatchStar = function(matchId, name) {
     return showToast('🔒 Bạn đã chốt lựa chọn, không thể thay đổi!','red');
   }
   
-  if(p.isStar) {
-    p.isStar = false;
-    showToast('Tắt Ngôi sao hy vọng', 'orange');
+  const used = getUsedStars(name);
+  
+  if(p.starMult === mult) {
+    p.starMult = null;
+    showToast(`Tắt Ngôi sao hy vọng ${mult}x`, 'orange');
   } else {
-    const used = countUsedStars(name);
-    if(used >= 3) {
-      return showToast('⚠️ Bạn đã dùng hết 3 lượt Ngôi sao hy vọng!', 'red');
+    if(used[mult] && used[mult] !== matchId) {
+      return showToast(`⚠️ Bạn đã dùng ngôi sao ${mult}x cho trận khác!`, 'red');
     }
-    p.isStar = true;
-    showToast(`Đã bật Ngôi sao hy vọng! (Còn ${2 - used} lượt)`, 'green');
+    p.starMult = mult;
+    showToast(`Đã bật Ngôi sao hy vọng ${mult}x!`, 'green');
   }
   save();
   renderMatches();
