@@ -2485,7 +2485,7 @@ function renderResults(){
       let pickClass = pick==='win'?'mrr-pick-win':pick==='draw'?'mrr-pick-draw':pick==='loss'?'mrr-pick-loss':'mrr-pick-none';
       
       if(!showVote && pick) {
-        pickLabel = '❓ Đã giấu';
+        pickLabel = '❓ Bí mật';
         pickClass = 'mrr-pick-none';
       }
       
@@ -2829,7 +2829,7 @@ function renderMatches(){
         </div>`;
         }
       } else {
-        voteHtml = `<div style="text-align:center; font-weight:700; padding:6px 10px; border-radius:8px; display:flex; align-items:center; justify-content:center; white-space:nowrap; background:var(--surface2); color:var(--muted); border:1px solid var(--border)">❓ Đã giấu</div>`;
+        voteHtml = `<div style="text-align:center; font-weight:700; padding:6px 10px; border-radius:8px; display:flex; align-items:center; justify-content:center; white-space:nowrap; background:var(--surface2); color:var(--muted); border:1px solid var(--border)">❓ Bí mật</div>`;
         if(!pick) confirmCtrl = '';
       }
 
