@@ -1312,7 +1312,7 @@ const FIREBASE_CONFIG = {
 <script>
 // ── ADMIN SYSTEM ──
 let ADMIN_PWD_HASH = 'admin123'; // đổi mật khẩu tại đây
-const SK_ADMIN = 'wc2026_admin';
+const SK_ADMIN = 'wc2026_index4_admin';
 let isAdmin = false;
 
 function checkAdminSession(){
@@ -1410,7 +1410,7 @@ function requireAdmin(action){
 }
 
 // ── MEMBER ACCOUNT SYSTEM ──
-const SK_MEMBER_ID = 'wc2026_member_id';
+const SK_MEMBER_ID = 'wc2026_index4_member_id';
 let currentMember = null;
 
 function checkMemberSession(){
@@ -1798,8 +1798,8 @@ const CONF = {
   'Bosnia & Herzegovina':'🌍 UEFA','CH Séc':'🌍 UEFA'
 };
 
-const SK_MEMBERS = 'wc2026_members';
-const SK_MATCHES = 'wc2026_matches';
+const SK_MEMBERS = 'wc2026_index4_members';
+const SK_MATCHES = 'wc2026_index4_matches';
 
 // ── DATA ──
 let MEMBERS = [];
@@ -1880,12 +1880,12 @@ function refreshAllViews(){
     updateBadges();
     const memc=document.getElementById('memberCountBadge'); if(memc) memc.textContent=MEMBERS.length;
     const sf=document.getElementById('sfooter'); if(sf) sf.textContent=`⚽ World Cup 2026 · ${MEMBERS.length} thành viên`;
-  }catch(e){ console.error('[WC2026] refreshAllViews:', e); }
+  }catch(e){ console.error('[WC2026_INDEX4] refreshAllViews:', e); }
 }
 
 function initCloud(){
   if(!cloudConfigured()){
-    console.warn('[WC2026] Chưa cấu hình Firebase → dữ liệu chỉ lưu trên máy này.');
+    console.warn('[WC2026_INDEX4] Chưa cấu hình Firebase → dữ liệu chỉ lưu trên máy này.');
     showSyncBanner(false);
     return;
   }
@@ -1896,7 +1896,7 @@ function initCloud(){
     showSyncBanner(true);
 
     // Realtime: MATCHES
-    db.ref('wc2026/matches').on('value', snap=>{
+    db.ref('wc2026_index4/matches').on('value', snap=>{
       const val = snap.val();
       if(val!==null){
         const arr = Array.isArray(val) ? val : Object.values(val);
@@ -1911,11 +1911,11 @@ function initCloud(){
     });
 
     // Realtime: MEMBERS
-    db.ref('wc2026/adminPwd').on('value', snap=>{
+    db.ref('wc2026_index4/adminPwd').on('value', snap=>{
         if(snap.val()!==null){ ADMIN_PWD_HASH = snap.val(); }
         else if(isAdmin){ pushAdminPwd(); }
       });
-      db.ref('wc2026/members').on('value', snap=>{
+      db.ref('wc2026_index4/members').on('value', snap=>{
       const val = snap.val();
       if(val!==null){
         const arr = Array.isArray(val) ? val : Object.values(val);
@@ -1930,17 +1930,17 @@ function initCloud(){
       }
     });
   }catch(e){
-    console.error('[WC2026] Lỗi khởi tạo Firebase:', e);
+    console.error('[WC2026_INDEX4] Lỗi khởi tạo Firebase:', e);
     cloudReady = false;
     showSyncBanner(false);
   }
 }
 
 function pushMatches(){
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('wc2026_index4/matches').set(matches).catch(e=>console.error('[WC2026_INDEX4] push matches:',e)); }
 }
 function pushMembers(){
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026/members').set(MEMBERS).catch(e=>console.error('[WC2026] push members:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('wc2026_index4/members').set(MEMBERS).catch(e=>console.error('[WC2026_INDEX4] push members:',e)); }
 }
 
 function showSyncBanner(connected){ return; // Disabled by request
@@ -2293,7 +2293,7 @@ function renderRank(){
     // Tính toán tiến độ giải đấu theo lịch thực tế WC 2026
     // Mỗi entry: [ngày, số trận trong ngày đó] — tổng 104 trận
     // Nguồn: Wikipedia 2026 FIFA World Cup (đã xác minh: 72 bảng + 32 knockout = 104)
-    const WC2026_SCHEDULE = [
+    const wc2026_index4_SCHEDULE = [
       // === VÒNG BẢNG (72 trận, 11/6 – 27/6) ===
       // Matchday 1 (24 trận)
       ['2026-06-11',2], // Group A
@@ -2334,7 +2334,7 @@ function renderRank(){
     const todayStr = _d.getFullYear() + '-' +
       String(_d.getMonth()+1).padStart(2,'0') + '-' +
       String(_d.getDate()).padStart(2,'0');
-    const actualDoneBySchedule = WC2026_SCHEDULE
+    const actualDoneBySchedule = wc2026_index4_SCHEDULE
       .filter(([d]) => d < todayStr)  // chỉ tính ngày ĐÃ QUA hoàn toàn (trận hôm nay đá theo giờ Mỹ)
       .reduce((sum,[,n]) => sum + n, 0);
     const actualDone = Math.max(actualDoneBySchedule, doneMatches);
@@ -3429,7 +3429,7 @@ function toggleTheme(){
   document.body.classList.toggle('dark-mode');
   const isDark = document.body.classList.contains('dark-mode');
   document.querySelectorAll('.theme-btn').forEach(btn => btn.textContent = isDark ? '☀️' : '🌙');
-  localStorage.setItem('wc2026_theme', isDark ? 'dark' : 'light');
+  localStorage.setItem('wc2026_index4_theme', isDark ? 'dark' : 'light');
 }
 
 // ── RESPONSIVE ──
@@ -3445,7 +3445,7 @@ load();
 checkAdminSession();
 checkMemberSession();
 initCloud();   // bật đồng bộ cloud (nếu đã cấu hình Firebase)
-if(localStorage.getItem('wc2026_theme')==='dark'){document.body.classList.add('dark-mode');document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent='☀️');}
+if(localStorage.getItem('wc2026_index4_theme')==='dark'){document.body.classList.add('dark-mode');document.querySelectorAll('.theme-btn').forEach(btn=>btn.textContent='☀️');}
 document.getElementById('matchDate').value=new Date().toISOString().slice(0,10);
 initTeamSelects();
 buildAddPredRows();
