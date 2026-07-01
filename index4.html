@@ -2749,7 +2749,7 @@ function renderMatches(){
       const meTag = isMe ? '<span class="me-tag">Bạn</span>' : '';
       
       let starHtml = '';
-      if(isMe && !readOnlyMatch && !confirmed) {
+      if((isMe || isAdmin) && !readOnlyMatch && !confirmed) {
         const used = getUsedStars(name);
         starHtml = `<div style="display:inline-flex;gap:2px;margin-left:4px">`;
         [1.5, 2, 3].forEach(mVal => {
@@ -2800,9 +2800,9 @@ function renderMatches(){
       }
 
       return `<div class="pred-member-row ${rowClass}">
-        <div class="pred-member-name"><div class="avatar ${avColor(name)}" style="width:26px;height:26px;font-size:10px">${initials(name)}</div>${name}${meTag}${starHtml}</div>
+        <div class="pred-member-name"><div class="avatar ${avColor(name)}" style="width:26px;height:26px;font-size:10px">${initials(name)}</div>${name}${meTag}</div>
         ${voteHtml}
-        <div class="pred-confirm">${confirmCtrl}</div>
+        <div class="pred-confirm" style="display:flex; align-items:center; gap:6px">${starHtml}${confirmCtrl}</div>
       </div>`;
     }).join('');
 
