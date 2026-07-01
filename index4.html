@@ -806,11 +806,15 @@ body.dark-mode .form-group select{background-image:url("data:image/svg+xml,%3Csv
 .amount-pos{color:var(--green)}
 .amount-zero{color:var(--muted)}
 
-  /* NGÔI SAO HY VỌNG */
+  @keyframes starPulseGlow {
+    0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5); border-color: rgba(245, 158, 11, 0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); border-color: rgba(245, 158, 11, 1); }
+    100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); border-color: rgba(245, 158, 11, 0.5); }
+  }
   .has-star {
-    border: 1px solid var(--gold) !important;
-    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3) !important;
-    background: linear-gradient(to right, var(--bg-elevated), rgba(245, 158, 11, 0.05)) !important;
+    border: 2px solid var(--gold) !important;
+    animation: starPulseGlow 2s infinite !important;
+    background: linear-gradient(to right, var(--bg-elevated), rgba(245, 158, 11, 0.08)) !important;
   }
   .btn-star {
     background: transparent; border: 1px solid var(--border); cursor: pointer; font-size: 10px; font-weight: 800; padding: 2px 6px;
