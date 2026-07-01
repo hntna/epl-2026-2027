@@ -2427,8 +2427,14 @@ function renderResults(){
       if(p.length===3) shortDate = p[2]+'/'+p[1];
     }
     let hasAnyStar = false;
+    let starUsersHtml = '';
     if(m.predictions) {
-      Object.values(m.predictions).forEach(p => { if(p.starMult) hasAnyStar = true; });
+      const starEntries = Object.entries(m.predictions).filter(([n, p]) => p.starMult);
+      if(starEntries.length > 0) {
+        hasAnyStar = true;
+        const starAvatars = starEntries.map(([n, p]) => `<div class="avatar ${avColor(n)}" style="width:18px;height:18px;font-size:8px;border:1px solid var(--gold)" title="${n} (${p.starMult}x)">${initials(n)}</div>`).join('');
+        starUsersHtml = `<div style="display:flex;gap:4px;margin-top:6px;align-items:center;background:var(--gold-dim);padding:2px 8px;border-radius:12px;width:fit-content;border:1px solid rgba(245,158,11,0.2)"><span style="font-size:11px;color:var(--gold);font-weight:800;margin-right:2px">🌟:</span>${starAvatars}</div>`;
+      }
     }
     const scoreDisplay = done ? `${m.result.home} – ${m.result.away}` : 'vs';
 
@@ -2536,6 +2542,7 @@ function renderResults(){
             <span class="mh-tag mh-tag-bet">${fmtMoney(m.bet)}</span>
             ${statusTag}
           </div>
+          ${starUsersHtml}
         </div>
         <div class="mh-right">
           <span class="mh-arrow">▼</span>
@@ -2694,8 +2701,14 @@ function renderMatches(){
     MEMBERS.forEach(m2=>{if(m2.name===(m.banker||''))return;const p=m.predictions[m2.name];if(!p||!p.pick)cntNone++;else if(p.pick==='win')cntWin++;else cntLoss++;});
     
     let hasAnyStar = false;
+    let starUsersHtml = '';
     if(m.predictions) {
-      Object.values(m.predictions).forEach(p => { if(p.starMult) hasAnyStar = true; });
+      const starEntries = Object.entries(m.predictions).filter(([n, p]) => p.starMult);
+      if(starEntries.length > 0) {
+        hasAnyStar = true;
+        const starAvatars = starEntries.map(([n, p]) => `<div class="avatar ${avColor(n)}" style="width:18px;height:18px;font-size:8px;border:1px solid var(--gold)" title="${n} (${p.starMult}x)">${initials(n)}</div>`).join('');
+        starUsersHtml = `<div style="display:flex;gap:4px;margin-top:6px;align-items:center;background:var(--gold-dim);padding:2px 8px;border-radius:12px;width:fit-content;border:1px solid rgba(245,158,11,0.2)"><span style="font-size:11px;color:var(--gold);font-weight:800;margin-right:2px">🌟:</span>${starAvatars}</div>`;
+      }
     }
     
     const hcLabel = parseFloat(m.handicapVal)===0 ? 'Chấp bằng' : (m.handicapFavor==='away'?m.away:m.home)+' nhận '+m.handicapVal;
@@ -2855,6 +2868,7 @@ function renderMatches(){
               return `<span class="mh-tag" style="background:var(--orange-dim);color:var(--orange);border:1px solid rgba(245,158,11,.2)">⚠️ Chưa chọn</span>`;
             })()}
           </div>
+          ${starUsersHtml}
         </div>
         <div class="mh-right">
           ${predSummary}
