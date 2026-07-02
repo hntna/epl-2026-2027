@@ -2478,7 +2478,8 @@ function renderResults(){
       const p = m.predictions[name];
       const pick = p?.pick;
       const starMult = p?.starMult;
-      const canSeeAll = isAdmin || currentMember === (m.banker||'') || done;
+      const locked = isEffectiveLocked(m);
+      const canSeeAll = isAdmin || currentMember === (m.banker||'') || done || locked;
       const showVote = canSeeAll || name === currentMember;
       
       let pickLabel = pick==='win'?`🏠 Đội 1 thắng`:pick==='draw'?`— Hòa`:pick==='loss'?`✈️ Đội 2 thắng`:null;
@@ -2745,7 +2746,7 @@ function renderMatches(){
       : `<span class="mh-tag mh-tag-open">⏳ Chờ</span>`;
 
     // Prediction summary chips
-    const canSeeAll = isAdmin || currentMember === (m.banker||'') || done;
+    const canSeeAll = isAdmin || currentMember === (m.banker||'') || done || locked;
     let predSummary = '';
     if(canSeeAll) {
       predSummary = `<div class="mh-pred-summary">
