@@ -3144,9 +3144,13 @@ function setMatchPred(matchId, name, pick){
 // ── NGÔI SAO HY VỌNG ──
 function getUsedStars(memberName) {
   const used = {};
+  const resetTime = new Date("2026-07-08T00:00:00").getTime();
   matches.forEach(m => {
-    if(m.predictions && m.predictions[memberName] && m.predictions[memberName].starMult) {
-      used[m.predictions[memberName].starMult] = m.id;
+    const matchTime = new Date(`${m.date}T${m.time||'00:00'}:00`).getTime();
+    if(matchTime >= resetTime) {
+      if(m.predictions && m.predictions[memberName] && m.predictions[memberName].starMult) {
+        used[m.predictions[memberName].starMult] = m.id;
+      }
     }
   });
   return used;
