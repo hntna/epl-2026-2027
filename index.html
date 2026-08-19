@@ -2060,20 +2060,12 @@ const SK_MINIGAMES = 'wc2026_minigames';
 let miniGames = [];
 let currentMiniBet = 100000;
 
-function save(){try{localStorage.setItem(SK_MATCHES,JSON.stringify(matches));}catch(e){} pushMatches();}
-function saveMembers(){try{localStorage.setItem(SK_MEMBERS,JSON.stringify(MEMBERS));}catch(e){} pushMembers();}
-function saveMiniGames(){try{localStorage.setItem(SK_MINIGAMES,JSON.stringify(miniGames));}catch(e){} pushMiniGames();}
+function save(){pushMatches();}
+function saveMembers(){pushMembers();}
+function saveMiniGames(){pushMiniGames();}
 function load(){
-  try{const d=localStorage.getItem(SK_MATCHES);if(d)matches=JSON.parse(d);}catch(e){}
-  try{const d=localStorage.getItem(SK_MINIGAMES);if(d)miniGames=JSON.parse(d).map(normalizeMiniGame);}catch(e){}
-  try{
-    const d=localStorage.getItem(SK_MEMBERS);
-    if(d){
-      const parsed=JSON.parse(d);
-      // Migrate: nếu là mảng string cũ → đổi sang {name, pwd:''}
-      MEMBERS = parsed.map(m => typeof m==='string' ? {name:m, pwd:''} : m);
-    }
-  }catch(e){}
+  // Đã bỏ LocalStorage, mọi thứ load từ Firebase.
+  // Khởi tạo mặc định nếu Firebase rỗng:
   if(!MEMBERS.length) MEMBERS=['PTT','H20','DVV','DNV12','DBD1','ABT18','ADT156','SDH','TDX','NDH','TDB','TNT42','HNT14','LNV','TTD','CDV','VT3','DPT16','DTTT'].map(n=>({name:n,pwd:''}));
 }
 
@@ -2191,7 +2183,7 @@ function initCloud(){
         // KHÔNG tự đẩy dữ liệu cũ trên máy này lên lại, tránh "hồi sinh" dữ liệu đã bị xoá.
         matches = [];
       }
-      try{localStorage.setItem(SK_MATCHES,JSON.stringify(matches));}catch(e){}
+      
       suppressPush = false;
       refreshAllViews();
     });
@@ -2206,7 +2198,7 @@ function initCloud(){
       } else {
         miniGames = [];
       }
-      try{localStorage.setItem(SK_MINIGAMES,JSON.stringify(miniGames));}catch(e){}
+      
       suppressPush = false;
       refreshAllViews();
     });
@@ -2225,7 +2217,7 @@ function initCloud(){
       } else {
         MEMBERS = [];
       }
-      try{localStorage.setItem(SK_MEMBERS,JSON.stringify(MEMBERS));}catch(e){}
+      
       suppressPush = false;
       checkMemberSession();
       refreshAllViews();
