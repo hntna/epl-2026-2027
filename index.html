@@ -1662,7 +1662,7 @@ window.resetSeason = function(){
   window.activeRankTab = 'league';
   const resetTime = Date.now();
   localStorage.setItem('wc2026_lastReset', resetTime);
-  if(cloudReady && db) db.ref('wc2026_v2/lastReset').set(resetTime);
+  if(cloudReady && db) db.ref('epl2026/lastReset').set(resetTime);
   save();
   saveMiniGames();
   saveMembers();
@@ -2164,7 +2164,7 @@ function initCloud(){
     showSyncBanner(true);
 
     const localResetTime = parseInt(localStorage.getItem('wc2026_lastReset')) || 0;
-    db.ref('wc2026_v2/lastReset').on('value', snap => {
+    db.ref('epl2026/lastReset').on('value', snap => {
       const serverResetTime = snap.val();
       if (serverResetTime && serverResetTime > localResetTime) {
         localStorage.setItem('wc2026_lastReset', serverResetTime);
@@ -2174,7 +2174,7 @@ function initCloud(){
     });
 
     // Realtime: MATCHES
-    db.ref('wc2026_v2/matches').on('value', snap=>{
+    db.ref('epl2026/matches').on('value', snap=>{
       const val = snap.val();
       suppressPush = true;
       if(val!==null){
@@ -2191,7 +2191,7 @@ function initCloud(){
     });
 
     // Realtime: MINI GAMES (Pickleball)
-    db.ref('wc2026_v2/miniGames').on('value', snap=>{
+    db.ref('epl2026/miniGames').on('value', snap=>{
       const val = snap.val();
       suppressPush = true;
       if(val!==null){
@@ -2206,11 +2206,11 @@ function initCloud(){
     });
 
     // Realtime: MEMBERS
-    db.ref('wc2026_v2/adminPwd').on('value', snap=>{
+    db.ref('epl2026/adminPwd').on('value', snap=>{
         if(snap.val()!==null){ ADMIN_PWD_HASH = snap.val(); }
         else if(isAdmin){ pushAdminPwd(); }
       });
-      db.ref('wc2026_v2/members').on('value', snap=>{
+      db.ref('epl2026/members').on('value', snap=>{
       const val = snap.val();
       suppressPush = true;
       if(val!==null){
@@ -2233,15 +2233,15 @@ function initCloud(){
 
 function pushMatches(){
   if(!navigator.onLine) { showToast('⚠️ Mất mạng, không thể lưu!', 'red'); return; }
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026_v2/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('epl2026/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
 }
 function pushMembers(){
   if(!navigator.onLine) return;
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026_v2/members').set(MEMBERS).catch(e=>console.error('[WC2026] push members:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('epl2026/members').set(MEMBERS).catch(e=>console.error('[WC2026] push members:',e)); }
 }
 function pushMiniGames(){
   if(!navigator.onLine) return;
-  if(cloudReady && !suppressPush && db){ db.ref('wc2026_v2/miniGames').set(miniGames).catch(e=>console.error('[WC2026] push miniGames:',e)); }
+  if(cloudReady && !suppressPush && db){ db.ref('epl2026/miniGames').set(miniGames).catch(e=>console.error('[WC2026] push miniGames:',e)); }
 }
 
 function showSyncBanner(connected){ return; // Disabled by request
