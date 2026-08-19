@@ -1658,6 +1658,9 @@ window.resetSeason = function(){
   miniGames = [];
   MEMBERS = MEMBERS.map(m => ({ ...m, startBalance: 0 }));
   window.activeRankTab = 'league';
+  const resetTime = Date.now();
+  localStorage.setItem('wc2026_lastReset', resetTime);
+  if(cloudReady && db) db.ref('wc2026/lastReset').set(resetTime);
   save();
   saveMiniGames();
   saveMembers();
@@ -2166,6 +2169,16 @@ function initCloud(){
     cloudReady = true;
     showSyncBanner(true);
 
+    const localResetTime = parseInt(localStorage.getItem('wc2026_lastReset')) || 0;
+    db.ref('wc2026/lastReset').on('value', snap => {
+      const serverResetTime = snap.val();
+      if (serverResetTime && serverResetTime > localResetTime) {
+        localStorage.setItem('wc2026_lastReset', serverResetTime);
+        alert("⚠️ Quản trị viên vừa Reset dữ liệu giải đấu! Hệ thống sẽ tải lại để đồng bộ.");
+        window.location.reload(); 
+      }
+    });
+
     // Realtime: MATCHES
     db.ref('wc2026/matches').on('value', snap=>{
       const val = snap.val();
@@ -2225,12 +2238,15 @@ function initCloud(){
 }
 
 function pushMatches(){
+  if(!navigator.onLine) { showToast('⚠️ Mất mạng, không thể lưu!', 'red'); return; }
   if(cloudReady && !suppressPush && db){ db.ref('wc2026/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
 }
 function pushMembers(){
+  if(!navigator.onLine) return;
   if(cloudReady && !suppressPush && db){ db.ref('wc2026/members').set(MEMBERS).catch(e=>console.error('[WC2026] push members:',e)); }
 }
 function pushMiniGames(){
+  if(!navigator.onLine) return;
   if(cloudReady && !suppressPush && db){ db.ref('wc2026/miniGames').set(miniGames).catch(e=>console.error('[WC2026] push miniGames:',e)); }
 }
 
@@ -4228,5 +4244,6 @@ function filterProfileHistory(type, btn) {
 </script>
 </body>
 </html>
-< ! - -   f o r c e   r e d e p l o y   - - >  
+< ! - -   f o r c e   r e d e p l o y   - - > 
+ 
  
