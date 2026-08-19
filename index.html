@@ -3104,7 +3104,7 @@ function setPredAdd(name, pick){
 
 function changeBet(delta){
   currentBet = Math.max(50000, currentBet + delta);
-  document.getElementById('betDisplay').textContent = fmtMoney(currentBet);
+  document.getElementById('betDisplay').innerHTML = fmtMoney(currentBet);
 }
 
 // ── NHÀ CÁI ──
@@ -3538,7 +3538,7 @@ function setMiniView(view){
 // ── THÊM / SỬA / XOÁ TRẬN ──
 function changeMiniBet(delta){
   currentMiniBet = Math.max(50000, currentMiniBet + delta);
-  document.getElementById('miniBetDisplay').textContent = fmtMoney(currentMiniBet);
+  document.getElementById('miniBetDisplay').innerHTML = fmtMoney(currentMiniBet);
 }
 
 function onMiniHandicapValChange(){
@@ -3569,7 +3569,7 @@ function openAddMiniGameModal(){
   document.getElementById('miniHandicapVal').value='0';
   document.getElementById('miniHandicapFavor').value='none';
   currentMiniBet = 100000;
-  document.getElementById('miniBetDisplay').textContent = fmtMoney(currentMiniBet);
+  document.getElementById('miniBetDisplay').innerHTML = fmtMoney(currentMiniBet);
   document.getElementById('miniSameTeamWarn').style.display='none';
   openModal('addMiniGameModal');
   setTimeout(()=>document.getElementById('miniTeamA').focus(),100);
