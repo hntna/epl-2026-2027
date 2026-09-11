@@ -3062,7 +3062,7 @@ function renderMatches(){
       <button class="btn-sm btn-del" onclick="openDeleteModal('${m.id}')">🗑️</button>
     </div>` : '';
 
-    return`<div class="match-item${locked?' is-locked':''}${hasAnyStar?\' has-star\':\'\'}" id="match_${m.id}">
+    return`<div class="match-item${locked?' is-locked':''}${hasAnyStar?' has-star':''}" id="match_${m.id}">
       <div class="match-header" onclick="toggleMatch('${m.id}')">
         <span class="mh-no">#${matches.indexOf(m)+1}</span>
         <div class="mh-teams">
