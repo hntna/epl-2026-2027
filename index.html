@@ -1684,7 +1684,11 @@ window.resetSeason = function(){
   window.activeRankTab = 'league';
   const resetTime = Date.now();
   localStorage.setItem('wc2026_lastReset', resetTime);
-  if(cloudReady && db) db.ref('epl2026/lastReset').set(resetTime);
+  if(cloudReady && db){
+    db.ref('epl2026/lastReset').set(resetTime);
+    db.ref('epl2026/matches').set([]);
+    db.ref('epl2026/miniGames').set([]);
+  }
   save();
   saveMiniGames();
   saveMembers();
@@ -2255,7 +2259,10 @@ function initCloud(){
 
 function pushMatches(){
   if(!navigator.onLine) { showToast('⚠️ Mất mạng, không thể lưu!', 'red'); return; }
-  if(cloudReady && !suppressPush && db){ db.ref('epl2026/matches').set(matches).catch(e=>console.error('[WC2026] push matches:',e)); }
+  if(cloudReady && !suppressPush && db){
+    const dataToPush = matches && matches.length ? matches : [];
+    db.ref('epl2026/matches').set(dataToPush).catch(e=>console.error('[WC2026] push matches:',e));
+  }
 }
 function pushMembers(){
   if(!navigator.onLine) return;
@@ -2263,7 +2270,10 @@ function pushMembers(){
 }
 function pushMiniGames(){
   if(!navigator.onLine) return;
-  if(cloudReady && !suppressPush && db){ db.ref('epl2026/miniGames').set(miniGames).catch(e=>console.error('[WC2026] push miniGames:',e)); }
+  if(cloudReady && !suppressPush && db){
+    const dataToPush = miniGames && miniGames.length ? miniGames : [];
+    db.ref('epl2026/miniGames').set(dataToPush).catch(e=>console.error('[WC2026] push miniGames:',e));
+  }
 }
 
 function showSyncBanner(connected){ return; // Disabled by request
